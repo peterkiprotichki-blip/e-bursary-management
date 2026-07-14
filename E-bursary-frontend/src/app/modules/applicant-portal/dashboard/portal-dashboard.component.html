@@ -1,0 +1,192 @@
+<div class="min-h-screen">
+  <!-- Page header -->
+  <div class="flex items-start justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome back, {{ getFirstName(profile) }}</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Here's your bursary application overview</p>
+    </div>
+    <button
+      (click)="goToApplication()"
+      [disabled]="!bursaryOpen"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold flex-shrink-0 transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      style="background: var(--accent-600)"
+      [title]="!bursaryOpen ? 'Applications are currently closed' : ''"
+    >
+      <i class="fas fa-pen-to-square"></i> Continue Application
+    </button>
+  </div>
+
+  <!-- Applications Closed Alert -->
+  <div *ngIf="!bursaryOpen && !loading" class="mb-5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center gap-3">
+    <div class="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div>
+      <div class="text-sm font-semibold text-amber-800 dark:text-amber-300">Bursary Applications Closed</div>
+      <div class="text-xs text-amber-600 dark:text-amber-400">The application cycle is currently closed. You can view your data but cannot submit or edit applications.</div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 gap-3 text-gray-500 dark:text-gray-400">
+    <div class="w-8 h-8 border-2 border-gray-200 dark:border-slate-600 rounded-full animate-spin" style="border-top-color: var(--accent-600)"></div>
+    <p class="text-sm">Loading your dashboard…</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <!-- No application -->
+    <div *ngIf="!application" class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-2xl text-gray-400 dark:text-gray-500 mb-4">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">No application yet</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">Start your bursary application by filling in your details, uploading documents, and submitting your request.</p>
+    </div>
+
+    <ng-container *ngIf="application">
+      <!-- Progress cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+        <!-- Application progress -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 sm:p-5 border-l-4 transition-colors" style="border-left-color: var(--accent-500)">
+          <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Progress</div>
+          <div class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ applicationProgress }}%</div>
+          <div class="text-xs text-gray-400 dark:text-gray-500">Application completion</div>
+        </div>
+
+        <!-- Documents -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 sm:p-5 border-l-4 transition-colors"
+          [style.border-left-color]="application.documents.length ? 'var(--accent-500)' : '#f97316'">
+          <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Documents</div>
+          <div class="text-lg sm:text-xl font-bold mb-1 text-gray-900 dark:text-gray-100">{{ application.documents.length || 0 }}</div>
+          <div class="text-xs text-gray-400 dark:text-gray-500">Files uploaded</div>
+        </div>
+
+        <!-- Stage -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 sm:p-5 border-l-4 transition-colors"
+          [style.border-left-color]="application.submitted ? 'var(--accent-500)' : '#f59e0b'">
+          <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Stage</div>
+          <div class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ application.stage | titlecase }}</div>
+          <div class="text-xs">
+            <span *ngIf="application.submitted" class="text-green-600 dark:text-green-400"><i class="fas fa-check mr-1"></i>Submitted</span>
+            <span *ngIf="!application.submitted" class="text-amber-600 dark:text-amber-400"><i class="fas fa-exclamation-circle mr-1"></i>Draft in progress</span>
+          </div>
+        </div>
+
+        <!-- Last saved -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 sm:p-5 border-l-4 transition-colors" style="border-left-color: var(--accent-500)">
+          <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Last Saved</div>
+          <div class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ application.lastSavedAt ? (application.lastSavedAt | date:'short') : '—' }}</div>
+          <div class="text-xs">
+            <span class="text-gray-500 dark:text-gray-400"><i class="fas fa-clock mr-1"></i>Draft synced</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert card -->
+      <div *ngIf="!application.submitted"
+           class="mb-5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center text-amber-500 dark:text-amber-400 flex-shrink-0">
+            <i class="fas fa-triangle-exclamation"></i>
+          </div>
+          <div>
+            <div class="text-sm font-semibold text-amber-700 dark:text-amber-300">Application not submitted yet</div>
+            <div class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Complete the checklist, upload the required documents, then submit your bursary application.</div>
+          </div>
+        </div>
+        <button (click)="goToApplication()" class="px-4 py-2 rounded-lg text-white text-xs font-semibold bg-amber-600 hover:bg-amber-700 transition-colors flex-shrink-0">
+          Continue
+        </button>
+      </div>
+
+      <!-- Application card -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 sm:p-6 mb-5 transition-colors">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">Application Summary</h2>
+          <a routerLink="/applicant-portal/application" class="text-sm font-medium transition-colors" style="color: var(--accent-600)">Open full application →</a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div>
+            <div class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Applicant</div>
+            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ application.fullName }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Institution</div>
+            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ application.institution || 'Not added yet' }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Course</div>
+            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ application.course || 'Not added yet' }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Submitted</div>
+            <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ application.submitted ? 'Yes' : 'No' }}</div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+            <span>Application progress</span>
+            <span>{{ applicationProgress }}%</span>
+          </div>
+          <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div class="h-2 rounded-full transition-all duration-500" [style.width.%]="applicationProgress" style="background: var(--accent-600)"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-4 py-3">
+          <span class="text-sm text-emerald-800 dark:text-emerald-300">Fill in all required fields to move your bursary request forward</span>
+          <a routerLink="/applicant-portal/application" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style="background: var(--accent-600)">Open Application</a>
+        </div>
+      </div>
+
+      <!-- Checklist -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 sm:p-6 transition-colors mb-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">Submission Checklist</h2>
+          <a routerLink="/applicant-portal/checklist" class="text-sm font-medium transition-colors" style="color: var(--accent-600)">View all →</a>
+        </div>
+        <div class="divide-y divide-gray-100 dark:divide-slate-700">
+          <div *ngFor="let item of checklist" class="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0" [class]="item.done ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'">
+              <i [class]="item.done ? 'fas fa-check' : 'fas fa-circle-exclamation'"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ item.label }}</div>
+            </div>
+            <div class="text-sm font-semibold flex-shrink-0" [class]="item.done ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'">
+              {{ item.done ? 'Done' : 'Pending' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 sm:p-6 transition-colors">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">Application Timeline</h2>
+          <a routerLink="/applicant-portal/status" class="text-sm font-medium transition-colors" style="color: var(--accent-600)">View status →</a>
+        </div>
+        <div class="space-y-4">
+          <div *ngFor="let step of timeline" class="flex gap-3">
+            <div class="mt-1 w-3 h-3 rounded-full flex-shrink-0" [class]="step.status === 'completed' ? 'bg-green-500' : step.status === 'in_review' ? 'bg-blue-500' : 'bg-gray-300 dark:bg-slate-600'"></div>
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ step.label }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">{{ step.note }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support steps -->
+      <div class="grid gap-4 mt-5 sm:grid-cols-3">
+        <div *ngFor="let step of supportSteps" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3 text-white" style="background: var(--accent-600)"><i [class]="step.icon"></i></div>
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ step.title }}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ step.description }}</p>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

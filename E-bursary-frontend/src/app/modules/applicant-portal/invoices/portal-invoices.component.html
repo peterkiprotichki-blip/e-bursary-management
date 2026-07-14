@@ -1,0 +1,131 @@
+<div class="min-h-screen">
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Status</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Track where your bursary application is in the review process</p>
+    </div>
+    <div *ngIf="application" class="text-right hidden sm:block">
+      <div class="text-xs text-gray-400 dark:text-gray-500">Stage</div>
+      <div class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ stageLabel() | titlecase }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 gap-3 text-gray-500 dark:text-gray-400">
+    <div class="w-8 h-8 border-2 border-gray-200 dark:border-slate-600 rounded-full animate-spin" style="border-top-color: var(--accent-600)"></div>
+    <p class="text-sm">Loading status…</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 dark:text-red-300 mb-4">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && application">
+    <!-- Outcome Card (only shown when Awarded or Rejected) -->
+    <div *ngIf="application.stage === 'awarded'" class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-2xl p-6 mb-5">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl font-bold flex-shrink-0">
+          <i class="fas fa-award"></i>
+        </div>
+        <div class="space-y-1 w-full">
+          <h3 class="text-lg font-bold text-emerald-900 dark:text-emerald-400">Bursary Awarded!</h3>
+          <p class="text-sm text-emerald-700 dark:text-emerald-300">Congratulations! Your application has been approved for funding.</p>
+          <div class="mt-4 grid gap-4 sm:grid-cols-3 bg-white dark:bg-slate-800 border border-emerald-100 dark:border-emerald-900 p-4 rounded-xl">
+            <div>
+              <div class="text-xs text-gray-400 dark:text-slate-500 uppercase font-semibold">Award Amount</div>
+              <div class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">KES {{ application.awardAmount | number }}</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 dark:text-slate-500 uppercase font-semibold">Payment Destination</div>
+              <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ application.paymentDestination || 'Direct to Institution' }}</div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400 dark:text-slate-500 uppercase font-semibold">Status</div>
+              <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Disbursed</div>
+            </div>
+          </div>
+          <div *ngIf="application.reviewNotes" class="mt-3 text-xs text-emerald-800 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-950/40 p-3 rounded-lg border border-emerald-200/55">
+            <strong>Committee Notes:</strong> {{ application.reviewNotes }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="application.stage === 'rejected'" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-2xl p-6 mb-5">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400 text-xl font-bold flex-shrink-0">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="space-y-1 w-full">
+          <h3 class="text-lg font-bold text-red-900 dark:text-red-400">Application Not Approved</h3>
+          <p class="text-sm text-red-700 dark:text-red-300">We regret to inform you that your application was not approved for funding in this cycle.</p>
+          <div *ngIf="application.reviewNotes" class="mt-3 text-sm text-red-800 dark:text-red-400 bg-red-100/50 dark:bg-red-950/40 p-3 rounded-lg border border-red-200/55">
+            <strong>Committee Reason:</strong> {{ application.reviewNotes }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,1fr)]">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Review Timeline</h2>
+        <div class="space-y-4">
+          <div *ngFor="let step of timeline" class="flex gap-3">
+            <div class="mt-1 w-3 h-3 rounded-full flex-shrink-0" [ngClass]="timelineClass(step.status)"></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ step.label }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ step.note }}</div>
+                </div>
+                <span class="text-xs font-semibold px-2 py-1 rounded-full" [ngClass]="timelineClass(step.status)">{{ step.status | titlecase }}</span>
+              </div>
+              <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ step.date }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Application Snapshot</h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Applicant</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ application.fullName }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Institution</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ application.institution || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Course</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ application.course || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Submitted</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ application.submitted ? 'Yes' : 'No' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Progress</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ progress }}%</span>
+            </div>
+          </div>
+          <div class="mt-4 w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div class="h-2 rounded-full" [style.width.%]="progress" style="background: var(--accent-600)"></div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">What Happens Next</h2>
+          <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+            <p>Once your application is complete, it moves to review by the bursary office.</p>
+            <p>If approved, you may be asked for clarifications or additional supporting documents.</p>
+            <p>Final awards and disbursements will be recorded here as the process advances.</p>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 text-sm text-emerald-800 dark:text-emerald-300">
+          Keep checking this page for stage updates and review notes.
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

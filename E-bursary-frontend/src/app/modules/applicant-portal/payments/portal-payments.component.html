@@ -1,0 +1,85 @@
+<div class="min-h-screen">
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Documents</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Upload the supporting files required for your bursary application</p>
+    </div>
+    <div class="text-right hidden sm:block" *ngIf="application">
+      <div class="text-xs text-gray-400 dark:text-gray-500">Uploaded</div>
+      <div class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ application?.documents?.length || 0 }} files</div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-16 gap-3 text-gray-500 dark:text-gray-400">
+    <div class="w-8 h-8 border-2 border-gray-200 dark:border-slate-600 rounded-full animate-spin" style="border-top-color: var(--accent-600)"></div>
+    <p class="text-sm">Loading documents…</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 dark:text-red-300 mb-4">{{ error }}</div>
+  <div *ngIf="success && !loading" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3 text-sm text-green-700 dark:text-green-300 mb-4">{{ success }}</div>
+
+  <ng-container *ngIf="!loading">
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Required Documents</h2>
+        <div class="space-y-3">
+          <div *ngFor="let key of requiredKeys()" class="border border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-3">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <div class="font-medium text-gray-900 dark:text-gray-100">{{ docName(key) }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ completionLabel(key) }}</div>
+              </div>
+              <span class="inline-flex text-xs px-2 py-1 rounded-full font-medium" [ngClass]="completionClass(key)">{{ completionLabel(key) }}</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <input type="file" multiple accept="image/jpeg,image/png,image/gif,image/webp" (change)="onDocumentChange($event, key)" class="text-xs text-gray-500 dark:text-gray-400 flex-1" />
+            </div>
+            <div *ngIf="existingDocuments(key).length > 0" class="mt-3 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-3">
+              <div class="flex flex-wrap gap-2">
+                <div *ngFor="let doc of existingDocuments(key)" class="relative overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700 w-28 h-28 group">
+                  <img [src]="doc.dataUrl" class="w-full h-full object-cover" />
+                  <button type="button" (click)="removeDocument(doc)" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs hover:bg-red-700 transition-colors">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Your Upload Summary</h2>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500 dark:text-gray-400">Documents uploaded</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ application?.documents?.length || 0 }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500 dark:text-gray-400">Required items</span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ requiredKeys().length }}</span>
+            </div>
+            <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+              <div class="h-2 rounded-full" [style.width.%]="requiredKeys().length ? ((application?.documents?.length || 0) / requiredKeys().length) * 100 : 0" style="background: var(--accent-600)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Tips</h2>
+          <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+            <li>Use clear scans or photos so reviewers can verify your documents quickly.</li>
+            <li>Keep the file names simple and descriptive.</li>
+            <li>Upload the admission letter, ID, and fee statement first.</li>
+          </ul>
+        </div>
+
+        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 text-sm text-amber-800 dark:text-amber-300">
+          <div class="font-semibold mb-1">Need help?</div>
+          If a document is missing, finish your application draft first, then upload the file as soon as you have it.
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,111 @@
+<div class="space-y-4 p-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Bursary Schemes & Programs</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Manage financial funding rounds, budget thresholds, and active bursary windows.</p>
+    </div>
+    <button (click)="openModal()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5">
+      <i class="fas fa-plus"></i> Create Program
+    </button>
+  </div>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div *ngFor="let prog of programs" class="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow p-5 space-y-4">
+      <!-- Badge and Action Options -->
+      <div class="flex justify-between items-start">
+        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border"
+          [ngClass]="{
+            'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800': prog.status === 'active',
+            'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/30 dark:text-slate-500 dark:border-slate-800': prog.status === 'closed'
+          }">
+          {{ prog.status === 'active' ? 'Active Window' : 'Closed' }}
+        </span>
+        <div class="flex gap-2">
+          <button (click)="openModal(prog)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button (click)="deleteProgram(prog.id)" class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 text-sm">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="space-y-1.5">
+        <h3 class="font-bold text-base text-gray-900 dark:text-white leading-snug">{{ prog.name }}</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{{ prog.description }}</p>
+      </div>
+
+      <!-- Financials / Budget progress -->
+      <div class="space-y-2 border-t border-gray-100 dark:border-slate-700/80 pt-3 text-xs">
+        <div class="flex justify-between text-gray-500 dark:text-gray-400">
+          <span>Year:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ prog.year }}</span>
+        </div>
+        <div class="flex justify-between text-gray-500 dark:text-gray-400">
+          <span>Allocated / Budget:</span>
+          <span class="font-bold text-gray-800 dark:text-gray-200">
+            KES {{ prog.allocated.toLocaleString() }} / KES {{ prog.budget.toLocaleString() }}
+          </span>
+        </div>
+        <div class="w-full bg-gray-100 dark:bg-slate-900 rounded-full h-2 overflow-hidden mt-1">
+          <div class="bg-emerald-600 h-full rounded-full" [style.width.%]="(prog.allocated / prog.budget) * 100"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Modal Dialogue -->
+  <div *ngIf="selectedProg" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+          {{ isEdit ? 'Edit Program Details' : 'Create New Bursary Program' }}
+        </h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Inputs -->
+      <div class="space-y-4 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Program Name *</label>
+          <input type="text" [(ngModel)]="formName" name="name" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm font-semibold" placeholder="e.g. Tertiary Support Scheme" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Fiscal Year</label>
+            <input type="text" [(ngModel)]="formYear" name="year" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Budget Allocation (KES)</label>
+            <input type="number" [(ngModel)]="formBudget" name="budget" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm font-bold" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Description</label>
+          <textarea [(ngModel)]="formDescription" name="description" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-xs" placeholder="Add program objective details..."></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Funding Window Status</label>
+          <select [(ngModel)]="formStatus" name="status" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-xs font-medium">
+            <option value="active">Active Window</option>
+            <option value="closed">Closed Window</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 border-t border-slate-100 dark:border-slate-700 pt-4 mt-5">
+        <button (click)="closeModal()" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+          Cancel
+        </button>
+        <button (click)="saveProgram()" [disabled]="!formName.trim()" class="flex-1 py-2 px-3 rounded-lg text-white text-sm font-semibold transition-opacity bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50">
+          Save Program
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

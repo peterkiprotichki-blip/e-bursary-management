@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/e-bursary-frontend/browser",
+  "installCommand": "npm install",
+  "routes": [
+    {
+      "src": "^/api/(.*)",
+      "dest": "https://e-bursary-backend.vercel.app/api/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

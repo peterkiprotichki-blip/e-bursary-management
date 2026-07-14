@@ -1,0 +1,107 @@
+<div class="pb-10">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Bursary Dashboard</h1>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-500">Portal Cycle:</span>
+      <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase" 
+        [ngClass]="{
+          'bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800': isBursaryOpen,
+          'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800': !isBursaryOpen
+        }">
+        <i class="fas mr-1.5" [class.fa-lock-open]="isBursaryOpen" [class.fa-lock]="!isBursaryOpen"></i>
+        {{ isBursaryOpen ? 'Open for Applications' : 'Closed' }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <i class="fas fa-spinner fa-spin text-2xl" [style.color]="themeService.accent"></i>
+  </div>
+
+  <div *ngIf="!loading && summary" class="space-y-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
+            <i class="fas fa-user-graduate text-blue-600 dark:text-blue-400"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ summary.applicants.total }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Total Applicants</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-100 dark:bg-amber-900/30">
+            <i class="fas fa-search text-amber-600 dark:text-amber-400"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ summary.applicants.inReview }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">In Review</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/30">
+            <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ summary.applicants.awarded }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Awarded</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30">
+            <i class="fas fa-hand-holding-usd text-emerald-600 dark:text-emerald-400"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">KES {{ summary.disbursements.total | number }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Total Disbursed</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5 lg:col-span-2">
+        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          <i class="fas fa-chart-line mr-2" [style.color]="themeService.accent"></i>Application Pipeline
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-lg bg-gray-50 dark:bg-slate-700/60 p-3">
+            <p class="text-xs text-gray-500 dark:text-gray-400">Submitted</p>
+            <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ summary.applicants.submitted }}</p>
+          </div>
+          <div class="rounded-lg bg-gray-50 dark:bg-slate-700/60 p-3">
+            <p class="text-xs text-gray-500 dark:text-gray-400">In Review</p>
+            <p class="text-lg font-semibold text-amber-600 dark:text-amber-400">{{ summary.applicants.inReview }}</p>
+          </div>
+          <div class="rounded-lg bg-gray-50 dark:bg-slate-700/60 p-3">
+            <p class="text-xs text-gray-500 dark:text-gray-400">Awarded</p>
+            <p class="text-lg font-semibold text-green-600 dark:text-green-400">{{ summary.applicants.awarded }}</p>
+          </div>
+          <div class="rounded-lg bg-gray-50 dark:bg-slate-700/60 p-3">
+            <p class="text-xs text-gray-500 dark:text-gray-400">Rejected</p>
+            <p class="text-lg font-semibold text-red-600 dark:text-red-400">{{ summary.applicants.rejected }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
+        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          <i class="fas fa-bolt mr-2" [style.color]="themeService.accent"></i>Quick Actions
+        </h3>
+        <div class="space-y-2">
+          <a routerLink="/bursary/applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors">
+            <i class="fas fa-file-alt text-xs" [style.color]="themeService.accent"></i> Review Applications
+          </a>
+          <a routerLink="/payments" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors">
+            <i class="fas fa-wallet text-xs" [style.color]="themeService.accent"></i> Process Disbursements
+          </a>
+          <a routerLink="/reports" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors">
+            <i class="fas fa-chart-bar text-xs" [style.color]="themeService.accent"></i> View Reports
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

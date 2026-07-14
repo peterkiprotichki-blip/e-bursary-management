@@ -1,0 +1,400 @@
+<div class="space-y-4">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Applications</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Review submissions from the applicant portal and move them through bursary stages.</p>
+  </div>
+
+  <div *ngIf="error" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+    Loading applications...
+  </div>
+
+  <div *ngIf="!loading" class="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-slate-900/50 text-gray-600 dark:text-gray-300">
+        <tr>
+          <th class="px-4 py-3 text-left font-medium">Applicant</th>
+          <th class="px-4 py-3 text-left font-medium">Institution</th>
+          <th class="px-4 py-3 text-left font-medium">Progress</th>
+          <th class="px-4 py-3 text-left font-medium">Stage</th>
+          <th class="px-4 py-3 text-left font-medium">Submitted</th>
+          <th class="px-4 py-3 text-left font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!applications.length">
+          <td colspan="6" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">No submitted applications yet.</td>
+        </tr>
+
+        <tr *ngFor="let app of applications" class="border-t border-gray-100 dark:border-slate-700/70">
+          <td class="px-4 py-3">
+            <p class="font-medium text-gray-900 dark:text-gray-100">{{ app.fullName }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ app.email }}</p>
+          </td>
+          <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+            <p>{{ app.institution || 'Not provided' }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ app.course || 'No course' }}</p>
+          </td>
+          <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ app.progress }}%</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium" [class]="badgeClass(app.stage)">
+              {{ app.stage }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ app.submittedAt ? (app.submittedAt | date:'medium') : '—' }}</td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap gap-2">
+              <button
+                class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700/50"
+                [disabled]="updatingId === app._id"
+                (click)="openViewModal(app)"
+              >
+                View
+              </button>
+              <button
+                class="rounded-lg border border-indigo-300 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                [disabled]="updatingId === app._id"
+                (click)="openEditModal(app)"
+              >
+                Edit
+              </button>
+              <button
+                class="rounded-lg border border-amber-300 px-2.5 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                [disabled]="updatingId === app._id"
+                (click)="openVettingModal(app, 'in_review')"
+              >
+                Review
+              </button>
+              <button
+                class="rounded-lg border border-green-300 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-900/20"
+                [disabled]="updatingId === app._id"
+                (click)="openVettingModal(app, 'awarded')"
+              >
+                Award
+              </button>
+              <button
+                class="rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+                [disabled]="updatingId === app._id"
+                (click)="openVettingModal(app, 'rejected')"
+              >
+                Reject
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Vetting Dialog Modal -->
+  <div *ngIf="selectedApp && !viewingApp" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+          {{ modalStage === 'awarded' ? 'Award Bursary' : modalStage === 'rejected' ? 'Reject Application' : 'Review Application' }}
+        </h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Applicant Info -->
+      <div class="mb-4 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-xs">
+        <div class="flex justify-between py-1">
+          <span class="text-gray-500">Applicant:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ selectedApp.fullName }}</span>
+        </div>
+        <div class="flex justify-between py-1">
+          <span class="text-gray-500">Institution:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ selectedApp.institution || 'Not provided' }}</span>
+        </div>
+      </div>
+
+      <!-- Form Inputs -->
+      <div class="space-y-4">
+        <!-- Allocation Amount (Only Awarded) -->
+        <div *ngIf="modalStage === 'awarded'">
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Allocation Amount (KES)</label>
+          <input type="number" [(ngModel)]="awardAmount" name="awardAmount" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm font-semibold" placeholder="e.g. 35000" />
+        </div>
+
+        <!-- Payment Destination / Pay to (Only Awarded) -->
+        <div *ngIf="modalStage === 'awarded'">
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Paying to / Payment Destination</label>
+          <select [(ngModel)]="paymentDestination" name="paymentDestination" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm font-semibold mb-2">
+            <option value="Direct to Institution">Direct to Institution Account</option>
+            <option value="Applicant Mobile M-Pesa">Applicant Mobile M-Pesa</option>
+            <option value="Guardian Mobile M-Pesa">Guardian Mobile M-Pesa</option>
+            <option value="Applicant Bank Account">Applicant Bank Account</option>
+          </select>
+          <input type="text" [(ngModel)]="paymentDestination" name="paymentDestinationText" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-xs" placeholder="Or enter specific details (e.g. Cooperative Bank A/C ...)" />
+        </div>
+
+        <!-- Review/Vetting Notes -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+            {{ modalStage === 'rejected' ? 'Rejection Reason *' : 'Committee Review Notes' }}
+          </label>
+          <textarea [(ngModel)]="reviewNotes" name="reviewNotes" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 text-sm" placeholder="Add details or reasons here..."></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 border-t border-slate-100 dark:border-slate-700 pt-4 mt-5">
+        <button (click)="closeModal()" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+          Cancel
+        </button>
+        <button (click)="submitVetting()" [disabled]="updatingId || (modalStage === 'rejected' && !reviewNotes.trim())" class="flex-1 py-2 px-3 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-50" [style.background]="modalStage === 'awarded' ? 'var(--accent-600)' : modalStage === 'rejected' ? '#ef4444' : '#f59e0b'">
+          {{ updatingId ? 'Updating...' : 'Submit Decision' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applicant Details View Modal -->
+  <div *ngIf="viewingApp" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-6 py-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Applicant Profile: {{ viewingApp.fullName }}</h3>
+          <p class="text-xs text-gray-400 capitalize">Level: {{ viewingApp.levelType === 'high_school' ? 'Secondary / High School' : 'University / College' }}</p>
+        </div>
+        <button (click)="closeViewModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-1 text-sm text-gray-700 dark:text-gray-300">
+        <!-- 1. Personal & Contact Details -->
+        <div class="space-y-3">
+          <h4 class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider border-b pb-1">1. Personal & Contact Details</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <span class="text-gray-400 text-xs">Full Name</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.fullName }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Phone</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.phone }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Email</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.email }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">National ID</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.idNumber || '—' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Academic Information -->
+        <div class="space-y-3">
+          <h4 class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider border-b pb-1">2. Academic Information</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <span class="text-gray-400 text-xs">Institution Name</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.institution }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Admission Number</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.admissionNumber }}</p>
+            </div>
+            <div *ngIf="viewingApp.levelType === 'high_school'">
+              <span class="text-gray-400 text-xs">Form / Level</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.formOrLevel }}</p>
+            </div>
+            <div *ngIf="viewingApp.levelType !== 'high_school'">
+              <span class="text-gray-400 text-xs">Course of Study</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.course || '—' }}</p>
+            </div>
+            <div *ngIf="viewingApp.levelType !== 'high_school'">
+              <span class="text-gray-400 text-xs">Year of Study</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.yearOfStudy || '—' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Household & Parent/Guardian Details -->
+        <div class="space-y-3">
+          <h4 class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider border-b pb-1">3. Household & Parent/Guardian Details</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <span class="text-gray-400 text-xs">Parent / Guardian Name</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.parentName }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Parent Phone</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.parentPhone }}</p>
+            </div>
+            <div *ngIf="viewingApp.levelType === 'high_school'">
+              <span class="text-gray-400 text-xs">Parent Email</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.parentEmail || '—' }}</p>
+            </div>
+            <div *ngIf="viewingApp.levelType === 'high_school'">
+              <span class="text-gray-400 text-xs">Parent National ID</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.parentNationalId || '—' }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Household Monthly Income</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.householdIncome }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Dependents</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.familyDependents }}</p>
+            </div>
+            <div>
+              <span class="text-gray-400 text-xs">Special Circumstances</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ viewingApp.specialCircumstances || 'None' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Statements -->
+        <div class="space-y-3">
+          <h4 class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider border-b pb-1">4. Personal Statement</h4>
+          <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-700/80 text-xs leading-relaxed max-h-40 overflow-y-auto whitespace-pre-wrap">
+            {{ viewingApp.personalStatement }}
+          </div>
+          <div *ngIf="viewingApp.guardianNotes" class="mt-2 text-xs">
+            <span class="text-gray-400 font-semibold">Additional Guardian Notes:</span>
+            <p class="italic text-gray-600 dark:text-gray-400 mt-1">{{ viewingApp.guardianNotes }}</p>
+          </div>
+        </div>
+
+        <!-- 5. Uploaded Documents -->
+        <div class="space-y-3">
+          <h4 class="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider border-b pb-1">5. Uploaded Document Verification</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div *ngFor="let doc of viewingApp.documents" class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between">
+              <div class="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 cursor-pointer" (click)="selectedPreviewUrl = doc.dataUrl">
+                <img [src]="doc.dataUrl" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                <div class="absolute inset-0 bg-slate-950/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <i class="fas fa-eye text-white text-base"></i>
+                </div>
+              </div>
+              <div class="p-3 text-[11px]">
+                <span class="inline-block px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-gray-400 font-bold uppercase mb-1">
+                  {{ docLabel(doc.name) }}
+                </span>
+                <p class="text-gray-400 truncate" [title]="doc.fileName">{{ doc.fileName }}</p>
+              </div>
+            </div>
+            <div *ngIf="!viewingApp.documents || viewingApp.documents.length === 0" class="col-span-full py-4 text-center text-xs text-gray-400">
+              No documents uploaded.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer action controls (Review, Award, Reject) -->
+      <div class="border-t border-slate-100 dark:border-slate-700 px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/10">
+        <div>
+          <span class="text-xs text-gray-500">Current Stage:</span>
+          <span class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase" [class]="badgeClass(viewingApp.stage)">
+            {{ viewingApp.stage }}
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="openVettingModal(viewingApp.originalApp, 'in_review')" class="px-4 py-2 text-xs font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 transition-colors flex items-center gap-1">
+            <i class="fas fa-search-plus"></i> Review
+          </button>
+          <button (click)="openVettingModal(viewingApp.originalApp, 'awarded')" class="px-4 py-2 text-xs font-semibold rounded-lg text-white hover:opacity-90 transition-opacity flex items-center gap-1 bg-green-600">
+            <i class="fas fa-award"></i> Award
+          </button>
+          <button (click)="openVettingModal(viewingApp.originalApp, 'rejected')" class="px-4 py-2 text-xs font-semibold rounded-lg text-white hover:opacity-90 transition-opacity flex items-center gap-1 bg-red-600">
+            <i class="fas fa-ban"></i> Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Zoom Image Lightbox Overlay -->
+  <div *ngIf="selectedPreviewUrl" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm" (click)="selectedPreviewUrl = ''">
+    <div class="relative max-w-4xl max-h-[90vh] bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl" (click)="$event.stopPropagation()">
+      <button (click)="selectedPreviewUrl = ''" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/50 hover:bg-slate-900/80 text-white flex items-center justify-center transition-colors text-sm">
+        <i class="fas fa-times"></i>
+      </button>
+      <img [src]="selectedPreviewUrl" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-inner" />
+    </div>
+  </div>
+
+  <!-- Edit Application Modal -->
+  <div *ngIf="editingApp" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 px-6 py-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Application: {{ editingApp.fullName }}</h3>
+        <button (click)="editingApp = null" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 space-y-4 text-sm">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Full Name</label>
+            <input [(ngModel)]="editForm.fullName" name="editFullName" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Phone</label>
+            <input [(ngModel)]="editForm.phone" name="editPhone" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Email</label>
+            <input [(ngModel)]="editForm.email" name="editEmail" type="email" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">National ID</label>
+            <input [(ngModel)]="editForm.idNumber" name="editIdNumber" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Institution</label>
+            <input [(ngModel)]="editForm.institution" name="editInstitution" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Course</label>
+            <input [(ngModel)]="editForm.course" name="editCourse" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Admission Number</label>
+            <input [(ngModel)]="editForm.admissionNumber" name="editAdmissionNumber" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Household Income</label>
+            <input [(ngModel)]="editForm.householdIncome" name="editHouseholdIncome" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Dependents</label>
+            <input [(ngModel)]="editForm.familyDependents" name="editFamilyDependents" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Bank Name</label>
+            <input [(ngModel)]="editForm.bankName" name="editBankName" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Account Number</label>
+            <input [(ngModel)]="editForm.accountNumber" name="editAccountNumber" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Personal Statement</label>
+            <textarea [(ngModel)]="editForm.personalStatement" name="editPersonalStatement" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 dark:border-slate-700 px-6 py-4 flex items-center gap-3">
+        <button (click)="editingApp = null" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+          Cancel
+        </button>
+        <button (click)="submitEdit()" [disabled]="updatingId" class="flex-1 py-2 px-3 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-50 bg-indigo-600 hover:bg-indigo-700">
+          {{ updatingId ? 'Saving…' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
