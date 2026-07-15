@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '@env/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ImgbbUploadService {
-  private readonly apiKey = 'eebabade6f9785164a9d2dc3d4350076';
-  private readonly uploadUrl = `https://api.imgbb.com/1/upload?key=${this.apiKey}`;
+  private readonly apiUrl = environment.apiUrl || 'http://localhost:3400/api';
+  private readonly uploadUrl = `${this.apiUrl}/applicant-portal/upload`;
 
   constructor(private http: HttpClient) {}
 
@@ -25,14 +26,19 @@ export class ImgbbUploadService {
     }
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
 
     return this.http.post<any>(this.uploadUrl, formData).pipe(
       map((response) => {
         if (response && response.success && response.data && response.data.url) {
-          return response.data.url;
+          // Convert relative URL to absolute if needed
+          const url = response.data.url;
+          if (url.startsWith('/')) {
+            return `${this.apiUrl}${url}`;
+          }
+          return url;
         }
-        throw new Error(response?.error?.message || 'ImgBB upload failed.');
+        throw new Error(response?.error?.message || 'File upload failed.');
       }),
       catchError((error) => {
         const errorMsg = error?.error?.error?.message || error?.message || 'Failed to upload image. Please try again.';

@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TenantPortalController } from './tenant-portal.controller';
 import { TenantPortalService } from './tenant-portal.service';
+import { FileUploadService } from './services/file-upload.service';
 import { TenantPortalJwtStrategy } from './strategies/tenant-portal-jwt.strategy';
 import { PropertyTenant, PropertyTenantSchema } from '../applicants/schemas/property-tenant.schema';
 
@@ -23,7 +24,7 @@ import { PropertyTenant, PropertyTenantSchema } from '../applicants/schemas/prop
     }),
   ],
   controllers: [TenantPortalController],
-  providers: [TenantPortalService, TenantPortalJwtStrategy],
+  providers: [TenantPortalService, TenantPortalJwtStrategy, FileUploadService],
   exports: [TenantPortalService],
 })
 export class TenantPortalModule {}

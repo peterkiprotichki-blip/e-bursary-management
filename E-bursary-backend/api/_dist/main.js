@@ -4,6 +4,8 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const express = require("express");
+const path = require("path");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors();
@@ -13,6 +15,7 @@ async function bootstrap() {
         whitelist: true,
         forbidNonWhitelisted: false,
     }));
+    app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
     const config = new swagger_1.DocumentBuilder()
         .setTitle('E-Bursary API')
         .setDescription('Rental Management System API for the Kenyan Market')

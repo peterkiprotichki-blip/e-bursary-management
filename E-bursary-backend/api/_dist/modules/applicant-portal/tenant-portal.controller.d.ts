@@ -1,9 +1,11 @@
 import { TenantPortalService } from './tenant-portal.service';
+import { FileUploadService, FileUploadInterface } from './services/file-upload.service';
 import { PortalLoginDto, PortalRegisterDto, PortalSetupPasswordDto, UpdatePortalProfileDto } from './dto/portal-auth.dto';
 import { SaveApplicantApplicationDto } from './dto/portal-application.dto';
 export declare class TenantPortalController {
     private readonly service;
-    constructor(service: TenantPortalService);
+    private readonly fileUploadService;
+    constructor(service: TenantPortalService, fileUploadService: FileUploadService);
     setupPassword(dto: PortalSetupPasswordDto): Promise<{
         message: string;
     }>;
@@ -188,4 +190,18 @@ export declare class TenantPortalController {
     resendInvite(propertyTenantId: string, req: any): Promise<{
         message: string;
     }>;
+    uploadFile(file: FileUploadInterface): {
+        success: boolean;
+        data: {
+            url: string;
+            filename: string;
+        };
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: {
+            message: any;
+        };
+        data?: undefined;
+    };
 }
