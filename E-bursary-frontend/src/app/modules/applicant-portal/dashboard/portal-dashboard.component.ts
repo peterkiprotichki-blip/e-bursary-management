@@ -34,6 +34,7 @@ export class PortalDashboardComponent implements OnInit {
   loading = true;
   error = '';
   bursaryOpen = true;
+  applicationDeadline = '';
 
   get applicationProgress(): number {
     return this.application?.progress || 0;
@@ -48,6 +49,12 @@ export class PortalDashboardComponent implements OnInit {
   ngOnInit() {
     this.profile = this.auth.getProfile();
     this.bursaryOpen = this.auth.isBursaryOpen();
+    this.portalService.getOrgSettings().subscribe({
+      next: (settings) => {
+        this.applicationDeadline = settings.applicationDeadline || '';
+      },
+      error: () => {},
+    });
     this.load();
   }
 

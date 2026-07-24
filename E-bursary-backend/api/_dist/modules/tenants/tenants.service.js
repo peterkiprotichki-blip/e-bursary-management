@@ -52,6 +52,15 @@ let TenantsService = class TenantsService {
         return this.tenantRepository.findByOwner(ownerUserId);
     }
     async update(id, dto) {
+        if (dto && dto.settings && dto.settings.bursaryOpen === true) {
+            const settings = dto.settings;
+            if (!settings.applicationDeadline) {
+                const now = new Date();
+                const deadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+                settings.applicationDeadline = deadline.toISOString();
+                dto.settings = settings;
+            }
+        }
         const tenant = await this.tenantRepository.update(id, dto);
         if (!tenant)
             throw new common_1.NotFoundException('Tenant not found');

@@ -139,7 +139,8 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
         const profile = this.sanitize(tenant);
         const org = await this.tenantOrgModel.findById(tenant.tenantId).lean();
         const bursaryOpen = org?.settings?.bursaryOpen !== false;
-        return { token, profile, bursaryOpen };
+        const applicationDeadline = org?.settings?.applicationDeadline || '';
+        return { token, profile, bursaryOpen, applicationDeadline };
     }
     async getProfile(propertyTenantId) {
         const tenant = await this.propertyTenantModel.findById(propertyTenantId);
@@ -259,6 +260,7 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
             mpesaClientId: org?.mpesaClientId || '',
             orgName: org?.name || '',
             bursaryOpen: org?.settings?.bursaryOpen !== false,
+            applicationDeadline: org?.settings?.applicationDeadline || '',
         };
     }
     async resendInvite(propertyTenantId, orgTenantId) {

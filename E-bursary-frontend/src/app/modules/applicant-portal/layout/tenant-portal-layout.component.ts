@@ -16,6 +16,7 @@ export class TenantPortalLayoutComponent implements OnInit {
   sidebarOpen = false;
   themeOpen = false;
   bursaryOpen = true;
+  applicationDeadline = '';
 
   navItems = [
     { label: 'Dashboard', icon: 'fas fa-th-large', route: '/applicant-portal/dashboard' },
@@ -37,6 +38,7 @@ export class TenantPortalLayoutComponent implements OnInit {
       next: (settings) => {
         this.orgName = settings.orgName || 'E-Bursary';
         this.bursaryOpen = settings.bursaryOpen !== false;
+        this.applicationDeadline = settings.applicationDeadline || '';
         localStorage.setItem('portal_bursary_open', String(this.bursaryOpen));
       },
       error: () => {},

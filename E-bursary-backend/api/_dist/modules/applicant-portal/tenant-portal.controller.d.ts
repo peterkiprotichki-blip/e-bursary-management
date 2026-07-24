@@ -13,6 +13,7 @@ export declare class TenantPortalController {
         token: string;
         profile: any;
         bursaryOpen: boolean;
+        applicationDeadline: any;
     }>;
     register(dto: PortalRegisterDto): Promise<{
         token: string;
@@ -186,6 +187,7 @@ export declare class TenantPortalController {
         mpesaClientId: any;
         orgName: any;
         bursaryOpen: boolean;
+        applicationDeadline: any;
     }>;
     resendInvite(propertyTenantId: string, req: any): Promise<{
         message: string;

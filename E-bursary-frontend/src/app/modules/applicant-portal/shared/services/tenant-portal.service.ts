@@ -68,7 +68,7 @@ export class TenantPortalService {
   }
 
   getOrgSettings() {
-    return this.http.get<{ mpesaClientId: string; orgName: string; bursaryOpen: boolean }>(`${this.base}/org-settings`);
+    return this.http.get<{ mpesaClientId: string; orgName: string; bursaryOpen: boolean; applicationDeadline?: string }>(`${this.base}/org-settings`);
   }
 
   confirmMpesaPayment(payload: {

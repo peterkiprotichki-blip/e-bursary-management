@@ -80,13 +80,23 @@
     <!-- Page content -->
     <main class="portal-content">
       <!-- Applications Closed Banner -->
-      <div *ngIf="!bursaryOpen" class="mb-5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center gap-3">
+      <div *ngIf="!bursaryOpen || applicationDeadline" class="mb-5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4 flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
         <div>
-          <div class="text-sm font-semibold text-amber-800 dark:text-amber-300">Bursary Applications Closed</div>
-          <div class="text-xs text-amber-600 dark:text-amber-400">The application cycle is currently closed. You can view your data but cannot create or edit applications.</div>
+          <div class="text-sm font-semibold text-amber-800 dark:text-amber-300">
+            {{ bursaryOpen ? 'Application Deadline' : 'Bursary Applications Closed' }}
+          </div>
+          <div class="text-xs text-amber-600 dark:text-amber-400">
+            <ng-container *ngIf="!bursaryOpen; else deadlineText">
+              The application cycle is currently closed. You can view your data but cannot create or edit applications.
+            </ng-container>
+            <ng-template #deadlineText>
+              <span *ngIf="applicationDeadline">Applications close on {{ applicationDeadline | date:'longDate' }}.</span>
+              <span *ngIf="!applicationDeadline">The application window is open. Check back for updates if a closing date is announced.</span>
+            </ng-template>
+          </div>
         </div>
       </div>
 
