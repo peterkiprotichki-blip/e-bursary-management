@@ -113,53 +113,43 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Application / Applicant *</label>
           <div class="relative">
-            <div class="flex gap-2">
-              <input type="text" [(ngModel)]="leaseSearch" (input)="showLeaseDropdown = true" (focus)="showLeaseDropdown = true" placeholder="Search by applicant, application ref, or program..." class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm outline-none" [class.border-green-400]="selectedLease" />
-              <button *ngIf="selectedLease" (click)="clearLeaseSelection()" class="px-2 py-1 rounded text-gray-400 hover:text-red-500 text-xs" title="Clear"><i class="fas fa-times"></i></button>
-            </div>
-            <!-- Dropdown -->
-            <div *ngIf="showLeaseDropdown && filteredLeaseOptions.length > 0" class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg max-h-52 overflow-y-auto">
-              <div *ngFor="let lease of filteredLeaseOptions" (mousedown)="selectLease(lease)" class="px-3 py-2.5 hover:bg-gray-100 dark:hover:bg-slate-600 cursor-pointer border-b border-gray-100 dark:border-slate-600/50 last:border-0">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="font-bold text-base text-gray-900 dark:text-gray-100">Ref {{ lease.unitNumber || '—' }}</span>
-                  <span class="text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{{ lease.propertyTenantName }}</span>
+            <ng-select
+              [items]="bursaryApplications"
+              bindLabel="fullName"
+              placeholder="Search awarded applications..."
+              [(ngModel)]="selectedApplication"
+              (change)="onApplicationSelect()">
+              <ng-template ng-option-tmp let-item="item">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-gray-800 dark:text-gray-100">{{ item.fullName }}</span>
+                  <span class="text-xs text-gray-500">{{ item.course }}</span>
                 </div>
-                <div class="flex items-center gap-3 mt-0.5">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">Amount: <span class="font-semibold text-gray-700 dark:text-gray-200">{{ lease.currency || 'KES' }} {{ lease.rentAmount | number }}</span></span>
-                  <ng-container *ngIf="getLeaseBalance(lease._id) >= 0">
-                    <span class="text-xs" [class.text-red-600]="getLeaseBalance(lease._id) > 0" [class.dark:text-red-400]="getLeaseBalance(lease._id) > 0" [class.text-green-600]="getLeaseBalance(lease._id) === 0" [class.dark:text-green-400]="getLeaseBalance(lease._id) === 0">
-                      Remaining: <span class="font-semibold">{{ lease.currency || 'KES' }} {{ getLeaseBalance(lease._id) | number }}</span>
-                    </span>
-                  </ng-container>
-                  <span *ngIf="getLeaseBalance(lease._id) < 0" class="text-xs text-gray-400 italic">loading…</span>
+                <div class="flex justify-between items-center mt-1">
+                  <span class="text-[11px] text-gray-400">{{ item.institution }}</span>
+                  <span class="text-xs font-semibold text-green-600 dark:text-green-400">KES {{ item.awardAmount | number }}</span>
                 </div>
-                <div *ngIf="lease.propertyName" class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">{{ lease.propertyName }} · {{ lease.leaseNumber }}</div>
-              </div>
-            </div>
-            <div *ngIf="showLeaseDropdown" class="fixed inset-0 z-40" (click)="showLeaseDropdown = false"></div>
+              </ng-template>
+            </ng-select>
           </div>
-          <!-- Selected Lease Info Card -->
-          <div *ngIf="selectedLease" class="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-xs space-y-1">
-            <div class="flex justify-between">
-              <span class="text-gray-600 dark:text-gray-400">Reference</span>
-              <span class="font-bold text-gray-900 dark:text-gray-100">{{ selectedLease.unitNumber || '—' }}</span>
-            </div>
+          
+          <!-- Selected Application Info Card -->
+          <div *ngIf="selectedApplication" class="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-xs space-y-1">
             <div class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-400">Applicant</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ selectedLease.propertyTenantName }}</span>
+              <span class="font-bold text-gray-900 dark:text-gray-100">{{ selectedApplication.fullName }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-600 dark:text-gray-400">Program</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ selectedLease.propertyName }}</span>
+              <span class="text-gray-600 dark:text-gray-400">Institution</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ selectedApplication.institution }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-600 dark:text-gray-400">Amount</span>
-              <span class="font-semibold text-gray-800 dark:text-gray-200">{{ selectedLease.currency || 'KES' }} {{ selectedLease.rentAmount | number }}</span>
+              <span class="text-gray-600 dark:text-gray-400">Accounts to be Paid to</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ selectedApplication.paymentDestination || 'Institution Default Account' }}</span>
             </div>
-            <div *ngIf="getLeaseBalance(selectedLease._id) >= 0" class="flex justify-between pt-1 border-t border-green-200 dark:border-green-700">
-              <span class="font-medium text-gray-700 dark:text-gray-300">Remaining Allocation Balance</span>
-              <span class="font-bold" [class.text-red-600]="getLeaseBalance(selectedLease._id) > 0" [class.dark:text-red-400]="getLeaseBalance(selectedLease._id) > 0" [class.text-green-600]="getLeaseBalance(selectedLease._id) === 0" [class.dark:text-green-400]="getLeaseBalance(selectedLease._id) === 0">
-                {{ selectedLease.currency || 'KES' }} {{ getLeaseBalance(selectedLease._id) | number }}
+            <div class="flex justify-between pt-1 border-t border-green-200 dark:border-green-700 mt-1">
+              <span class="font-medium text-gray-700 dark:text-gray-300">Awarded Amount</span>
+              <span class="font-bold text-green-600 dark:text-green-400">
+                KES {{ selectedApplication.awardAmount | number }}
               </span>
             </div>
           </div>
@@ -192,7 +182,7 @@
         </div>
 
         <!-- Funding Period (only for funding type) -->
-        <div *ngIf="form.paymentType === 'rent' && selectedLease">
+        <div *ngIf="form.paymentType === 'rent' && selectedApplication">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Funding Period <span class="text-xs text-gray-400">(select one or more months)</span></label>
           <div class="flex flex-wrap gap-1.5">
             <button *ngFor="let m of availableMonths" type="button" (click)="toggleMonth(m.value)"
@@ -208,7 +198,7 @@
             </button>
           </div>
           <div *ngIf="selectedMonths.length > 1" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {{ selectedMonths.length }} months × {{ form.currency || 'KES' }} {{ (selectedLease.rentAmount | number) }} = {{ form.currency || 'KES' }} {{ (selectedLease.rentAmount * selectedMonths.length | number) }}
+            {{ selectedMonths.length }} months × {{ form.currency || 'KES' }} {{ (selectedApplication.awardAmount | number) }} = {{ form.currency || 'KES' }} {{ (selectedApplication.awardAmount * selectedMonths.length | number) }}
           </div>
         </div>
 
@@ -218,7 +208,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount *</label>
             <input type="number" [(ngModel)]="form.amount" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm outline-none" />
             <!-- Live remaining balance for rent -->
-            <div *ngIf="form.paymentType === 'rent' && selectedLease && remainingAfterPayment !== null" class="mt-1 text-xs" [class.text-green-600]="remainingAfterPayment === 0" [class.text-orange-500]="remainingAfterPayment! > 0">
+            <div *ngIf="form.paymentType === 'rent' && selectedApplication && remainingAfterPayment !== null" class="mt-1 text-xs" [class.text-green-600]="remainingAfterPayment === 0" [class.text-orange-500]="remainingAfterPayment! > 0">
               Balance after payment: <span class="font-semibold">{{ form.currency || 'KES' }} {{ remainingAfterPayment | number }}</span>
               <span *ngIf="remainingAfterPayment === 0"> ✓ Fully paid</span>
             </div>
@@ -240,7 +230,7 @@
           </div>
         </div>
         <!-- M-Pesa STK Push button -->
-        <div *ngIf="form.paymentMethod === 'mpesa' && selectedLease" class="flex items-center gap-3 pt-1">
+        <div *ngIf="form.paymentMethod === 'mpesa' && selectedApplication" class="flex items-center gap-3 pt-1">
           <button type="button" (click)="openStkPush()"
             [disabled]="!form.amount"
             class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-semibold hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
@@ -259,7 +249,7 @@
       </div>
       <div class="flex justify-end gap-3 mt-6">
           <button (click)="showForm = false" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-sm text-gray-700 dark:text-gray-300">Cancel</button>
-        <button (click)="save()" [disabled]="saving || !selectedLease || !form.amount" class="px-6 py-2 rounded-lg text-white text-sm font-medium" [style.background-color]="themeService.accent" [class.opacity-50]="saving || !selectedLease || !form.amount">
+        <button (click)="save()" [disabled]="saving || !selectedApplication || !form.amount" class="px-6 py-2 rounded-lg text-white text-sm font-medium" [style.background-color]="themeService.accent" [class.opacity-50]="saving || !selectedApplication || !form.amount">
             {{ saving ? 'Saving...' : 'Record' }}
         </button>
       </div>

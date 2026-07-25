@@ -350,7 +350,6 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
             parentNationalId: portal.parentNationalId || '',
             bankName: portal.bankName || '',
             accountNumber: portal.accountNumber || '',
-            mpesaNumber: portal.mpesaNumber || '',
             householdIncome: portal.householdIncome || '',
             familyDependents: portal.familyDependents || '',
             specialCircumstances: portal.specialCircumstances || '',

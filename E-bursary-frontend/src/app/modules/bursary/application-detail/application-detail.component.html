@@ -1,0 +1,291 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  <!-- Top Navigation / Header -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <button (click)="goBack()" class="p-2 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Applicant Profile</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Review applicant details and documents.</p>
+      </div>
+    </div>
+    
+    <div *ngIf="viewingApp" class="flex items-center gap-3">
+      <span class="text-sm text-gray-500">Current Stage:</span>
+      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase shadow-sm" [class]="badgeClass(viewingApp.stage)">
+        {{ viewingApp.stage }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl border border-red-200 dark:border-red-800 text-sm">
+    <i class="fas fa-exclamation-circle mr-2"></i> {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+    <i class="fas fa-spinner fa-spin text-4xl mb-4 text-[var(--accent-500)]"></i>
+    <p>Loading profile details...</p>
+  </div>
+
+  <!-- Content Section -->
+  <div *ngIf="!loading && viewingApp" class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-gray-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ viewingApp.fullName }}</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">Level: {{ viewingApp.levelType === 'high_school' ? 'Secondary / High School' : 'University / College' }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button (click)="openVettingModal(viewingApp.originalApp, 'in_review')" class="px-4 py-2 text-sm font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 transition-colors flex items-center gap-2">
+          <i class="fas fa-search-plus"></i> Review
+        </button>
+        <button (click)="openVettingModal(viewingApp.originalApp, 'awarded')" class="px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 transition-opacity flex items-center gap-2 bg-green-600 shadow-sm">
+          <i class="fas fa-award"></i> Award
+        </button>
+        <button (click)="openVettingModal(viewingApp.originalApp, 'rejected')" class="px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 transition-opacity flex items-center gap-2 bg-red-600 shadow-sm">
+          <i class="fas fa-ban"></i> Reject
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Profile Content -->
+    <div class="p-6 space-y-8">
+      
+      <!-- 1. Personal & Contact Details -->
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider border-b border-gray-100 dark:border-slate-700 pb-2">1. Personal & Contact Details</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 bg-gray-50 dark:bg-slate-900/50 p-5 rounded-xl border border-gray-100 dark:border-slate-700">
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Full Name</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.fullName }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Phone</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.phone }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Email</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.email }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">National ID</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.idNumber || '—' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Academic Information -->
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider border-b border-gray-100 dark:border-slate-700 pb-2">2. Academic Information</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 bg-gray-50 dark:bg-slate-900/50 p-5 rounded-xl border border-gray-100 dark:border-slate-700">
+          <div class="col-span-2">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Institution Name</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.institution }}</p>
+          </div>
+          <div class="col-span-2">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Admission Number</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.admissionNumber }}</p>
+          </div>
+          <div *ngIf="viewingApp.levelType === 'high_school'">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Form / Level</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.formOrLevel }}</p>
+          </div>
+          <div *ngIf="viewingApp.levelType !== 'high_school'" class="col-span-2">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Course of Study</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.course || '—' }}</p>
+          </div>
+          <div *ngIf="viewingApp.levelType !== 'high_school'">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Year of Study</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.yearOfStudy || '—' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Household & Parent/Guardian Details -->
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider border-b border-gray-100 dark:border-slate-700 pb-2">3. Household & Guardian Details</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 bg-gray-50 dark:bg-slate-900/50 p-5 rounded-xl border border-gray-100 dark:border-slate-700">
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Parent/Guardian</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentName }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Contact</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentPhone }}</p>
+          </div>
+          <div *ngIf="viewingApp.levelType === 'high_school'">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Parent Email</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentEmail || '—' }}</p>
+          </div>
+          <div *ngIf="viewingApp.levelType === 'high_school'">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Parent ID</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentNationalId || '—' }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Monthly Income</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.householdIncome }}</p>
+          </div>
+          <div>
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Dependents</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.familyDependents }}</p>
+          </div>
+          <div class="col-span-2">
+            <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Special Circumstances</span>
+            <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.specialCircumstances || 'None' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Statements -->
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider border-b border-gray-100 dark:border-slate-700 pb-2">4. Personal Statement</h4>
+        <div class="bg-gray-50 dark:bg-slate-900/60 p-5 rounded-xl border border-gray-100 dark:border-slate-700/80 text-sm leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+          {{ viewingApp.personalStatement }}
+        </div>
+        <div *ngIf="viewingApp.guardianNotes" class="mt-4 p-5 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 text-sm">
+          <span class="text-amber-800 dark:text-amber-500 font-bold uppercase tracking-wider text-xs">Additional Guardian Notes</span>
+          <p class="italic text-amber-900 dark:text-amber-400 mt-2">{{ viewingApp.guardianNotes }}</p>
+        </div>
+      </div>
+
+      <!-- 5. Uploaded Documents -->
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider border-b border-gray-100 dark:border-slate-700 pb-2">5. Uploaded Document Verification</h4>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div *ngFor="let doc of viewingApp.documents" class="group overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer" (click)="openPreview(doc.dataUrl)">
+            
+            <div class="aspect-square relative overflow-hidden bg-gray-50 dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700 flex items-center justify-center p-4">
+              <!-- Render PDF icon for PDFs -->
+              <ng-container *ngIf="isPdf(doc.dataUrl)">
+                <div class="w-full h-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col items-center justify-center gap-3 text-red-500 transition-transform duration-300 group-hover:scale-105 shadow-sm">
+                  <i class="fas fa-file-pdf text-5xl"></i>
+                  <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">PDF Document</span>
+                </div>
+              </ng-container>
+
+              <!-- Render image for non-PDFs -->
+              <ng-container *ngIf="!isPdf(doc.dataUrl)">
+                <img [src]="doc.dataUrl" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 rounded-lg" />
+              </ng-container>
+              
+              <div class="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div class="bg-white/90 dark:bg-slate-800/90 w-10 h-10 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
+                  <i class="fas fa-expand text-gray-900 dark:text-white"></i>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-4">
+              <span class="inline-block px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                {{ docLabel(doc.name) }}
+              </span>
+              <p class="text-xs text-gray-500 dark:text-gray-400 truncate font-medium" [title]="doc.fileName">{{ doc.fileName }}</p>
+            </div>
+          </div>
+          
+          <div *ngIf="!viewingApp.documents || viewingApp.documents.length === 0" class="col-span-full py-12 text-center text-gray-400 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+            <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-folder-open text-2xl"></i>
+            </div>
+            <p class="font-medium">No documents uploaded.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox Overlay for Image/PDF Preview -->
+<div *ngIf="selectedPreviewUrl" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-md" (click)="closePreview()">
+  <div class="relative w-full max-w-5xl h-full max-h-[90vh] bg-transparent flex flex-col items-center justify-center" (click)="$event.stopPropagation()">
+    
+    <div class="absolute -top-4 sm:-top-8 right-0 sm:-right-8 flex gap-3">
+      <a *ngIf="isPdf(selectedPreviewUrl)" [href]="selectedPreviewUrl" target="_blank" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all backdrop-blur-sm text-sm shadow-lg">
+        <i class="fas fa-external-link-alt"></i>
+      </a>
+      <button (click)="closePreview()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all backdrop-blur-sm text-sm shadow-lg">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <!-- Document Preview Content -->
+    <div class="w-full h-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700/50 flex flex-col">
+      <div class="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
+        <div class="flex items-center gap-2">
+          <i [class]="isPdf(selectedPreviewUrl) ? 'fas fa-file-pdf text-red-500' : 'fas fa-image text-blue-500'"></i>
+          <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Document Preview</span>
+        </div>
+      </div>
+      
+      <div class="flex-1 w-full h-full overflow-hidden bg-gray-100 dark:bg-slate-950 flex flex-col items-center justify-center p-0 relative group">
+        
+        <!-- Viewer (Native Object Tag for full multi-page PDF scrolling) -->
+        <object *ngIf="isPdf(selectedPreviewUrl) && safePreviewUrl" [data]="safePreviewUrl" type="application/pdf" class="w-full h-full border-0 rounded-b-2xl bg-white">
+          <div class="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-slate-900">
+            <i class="fas fa-file-pdf text-6xl text-red-500 mb-4"></i>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">PDF Preview Not Supported</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-6">Your browser does not support inline PDF viewing natively.</p>
+            <a [href]="selectedPreviewUrl" target="_blank" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg">
+              <i class="fas fa-download mr-2"></i> Download Original PDF
+            </a>
+          </div>
+        </object>
+
+        <!-- Image Viewer -->
+        <img *ngIf="!isPdf(selectedPreviewUrl)" [src]="selectedPreviewUrl" class="max-w-full max-h-full object-contain p-4 rounded-lg shadow-lg" />
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- Vetting/Decision Modal (Reused) -->
+<div *ngIf="showVettingModal && selectedApp" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+  <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white capitalize">
+          {{ modalStage === 'awarded' ? 'Award Bursary' : modalStage === 'rejected' ? 'Reject Application' : 'Mark as Under Review' }}
+        </h3>
+        <button (click)="closeVettingModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        You are about to move <strong class="text-gray-700 dark:text-gray-300">{{ selectedApp.fullName }}</strong>'s application to <strong>{{ modalStage }}</strong> stage.
+      </p>
+
+      <div *ngIf="modalStage === 'awarded'" class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Award Amount (KES)</label>
+          <input type="number" [(ngModel)]="awardAmount" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-medium" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Payment Destination</label>
+          <select [(ngModel)]="paymentDestination" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-medium">
+            <option value="Direct to Institution">Direct to Institution</option>
+            <option value="Direct to Applicant">Direct to Applicant (M-Pesa)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Review Notes / Reason <span class="text-gray-400 font-normal text-xs">(optional unless rejecting)</span></label>
+        <textarea [(ngModel)]="reviewNotes" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm" placeholder="Provide any internal notes or feedback..."></textarea>
+      </div>
+
+      <div class="flex gap-3">
+        <button (click)="closeVettingModal()" class="flex-1 py-2 px-3 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+          Cancel
+        </button>
+        <button (click)="submitVetting()" [disabled]="updatingId || (modalStage === 'rejected' && !reviewNotes.trim())" class="flex-1 py-2 px-3 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-50" [style.background]="modalStage === 'awarded' ? 'var(--accent-600)' : modalStage === 'rejected' ? '#ef4444' : '#f59e0b'">
+          {{ updatingId ? 'Updating...' : 'Confirm Decision' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

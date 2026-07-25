@@ -2,21 +2,23 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class ImgbbUploadService {
-  private readonly apiKey = 'eebabade6f9785164a9d2dc3d4350076';
-  private readonly uploadUrl = `https://api.imgbb.com/1/upload?key=${this.apiKey}`;
+export class FileUploadService {
+  private readonly uploadUrl = `${environment.apiUrl}/upload`;
 
   constructor(private http: HttpClient) {}
 
-  uploadImage(file: File): Observable<string> {
+  uploadFile(file: File): Observable<string> {
     if (!file) {
       return throwError(() => new Error('No file selected.'));
     }
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    
+    // Accept images and pdfs
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      return throwError(() => new Error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'));
+      return throwError(() => new Error('Invalid file type. Please upload a JPEG, PNG, GIF, WebP, or PDF.'));
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -25,17 +27,17 @@ export class ImgbbUploadService {
     }
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
 
     return this.http.post<any>(this.uploadUrl, formData).pipe(
       map((response) => {
-        if (response && response.success && response.data && response.data.url) {
-          return response.data.url;
+        if (response && response.url) {
+          return response.url;
         }
-        throw new Error(response?.error?.message || 'ImgBB upload failed.');
+        throw new Error(response?.message || 'File upload failed.');
       }),
       catchError((error) => {
-        const errorMsg = error?.error?.error?.message || error?.message || 'Failed to upload image. Please try again.';
+        const errorMsg = error?.error?.message || error?.message || 'Failed to upload file. Please try again.';
         return throwError(() => new Error(errorMsg));
       })
     );

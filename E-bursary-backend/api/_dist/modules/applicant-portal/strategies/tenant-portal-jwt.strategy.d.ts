@@ -1,5 +1,5 @@
 import { Strategy } from 'passport-jwt';
-declare const TenantPortalJwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
+declare const TenantPortalJwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithoutRequest] | [opt: import("passport-jwt").StrategyOptionsWithRequest]) => Strategy & {
     validate(...args: any[]): unknown;
 };
 export declare class TenantPortalJwtStrategy extends TenantPortalJwtStrategy_base {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BursaryService } from '../../../shared/services/bursary/bursary.service';
 import { PropertyTenantsService } from '../../../shared/services/property-tenants/property-tenants.service';
 
@@ -21,10 +22,16 @@ export class DocumentsListComponent implements OnInit {
   loading = true;
   error = '';
   selectedImageUrl = '';
+  safePreviewUrl: SafeResourceUrl | null = null;
+  
+  // Filtering
+  applicants: { id: string; name: string }[] = [];
+  selectedApplicantId: string = 'all';
 
   constructor(
     private readonly bursaryService: BursaryService,
-    private readonly tenantsService: PropertyTenantsService
+    private readonly tenantsService: PropertyTenantsService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -49,7 +56,16 @@ export class DocumentsListComponent implements OnInit {
               dataUrl: doc.dataUrl
             });
           });
+          
+          // Add applicant to list for filtering if they have docs
+          if (docs.length > 0) {
+            this.applicants.push({ id: app._id, name: app.name });
+          }
         });
+        
+        // Sort applicants alphabetically
+        this.applicants.sort((a, b) => a.name.localeCompare(b.name));
+        
         this.documents = docList;
         this.loading = false;
       },
@@ -69,11 +85,35 @@ export class DocumentsListComponent implements OnInit {
     return map[name] || name;
   }
 
+  isPdf(url: string): boolean {
+    if (!url) return false;
+    return url.toLowerCase().includes('.pdf') || url.toLowerCase().endsWith('.pdf');
+  }
+
+  getPreviewImageUrl(url: string): string {
+    if (!url) return '';
+    if (this.isPdf(url)) {
+      return url.replace(/\.pdf$/i, '.jpg');
+    }
+    return url;
+  }
+
+  get filteredDocuments(): EnrichedDocument[] {
+    if (this.selectedApplicantId === 'all') return this.documents;
+    return this.documents.filter(d => d.applicantId === this.selectedApplicantId);
+  }
+
   openPreview(url: string) {
     this.selectedImageUrl = url;
+    if (this.isPdf(url)) {
+      this.safePreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    } else {
+      this.safePreviewUrl = null;
+    }
   }
 
   closePreview() {
     this.selectedImageUrl = '';
+    this.safePreviewUrl = null;
   }
 }

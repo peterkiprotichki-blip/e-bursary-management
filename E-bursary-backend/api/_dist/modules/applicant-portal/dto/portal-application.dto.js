@@ -106,11 +106,6 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], SaveApplicantApplicationDto.prototype, "mpesaNumber", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
 ], SaveApplicantApplicationDto.prototype, "householdIncome", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),

@@ -21,16 +21,18 @@
     </ng-container>
 
     <ng-container *ngIf="!checkingSession">
-      <div class="flex gap-2 mb-5">
-        <button type="button" (click)="setMode('login')" class="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors" [class.text-white]="mode === 'login'" [class.text-gray-700]="mode !== 'login'" [class.dark:text-gray-200]="mode !== 'login'" [style.background]="mode === 'login' ? 'var(--accent-600)' : ''" [style.border-color]="mode === 'login' ? 'var(--accent-600)' : '#d1d5db'">
-          Sign in
-        </button>
-        <button type="button" (click)="setMode('register')" class="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors" [class.text-white]="mode === 'register'" [class.text-gray-700]="mode !== 'register'" [class.dark:text-gray-200]="mode !== 'register'" [style.background]="mode === 'register' ? 'var(--accent-600)' : ''" [style.border-color]="mode === 'register' ? 'var(--accent-600)' : '#d1d5db'">
-          Create account
-        </button>
-      </div>
+      <!-- Bursary Closed State -->
+      <ng-container *ngIf="bursaryOpen === false">
+        <div class="text-center py-6">
+          <div class="w-16 h-16 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-2xl text-amber-500 mx-auto mb-5">
+            <i class="fas fa-lock"></i>
+          </div>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Portal Closed</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-0">The bursary application portal is currently closed. New registrations and logins are disabled.</p>
+        </div>
+      </ng-container>
 
-      <ng-container *ngIf="mode === 'login'">
+      <ng-container *ngIf="bursaryOpen !== false && mode === 'login'">
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Sign in</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Enter the email you used to create your applicant account</p>
 
@@ -81,10 +83,17 @@
             <span *ngIf="!loading">Sign In</span>
             <span *ngIf="loading">Signing in…</span>
           </button>
+
+          <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            Don't have an account? 
+            <a href="javascript:void(0)" (click)="setMode('register')" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors" [style.color]="'var(--accent-600)'">
+              Create Account
+            </a>
+          </div>
         </form>
       </ng-container>
 
-      <ng-container *ngIf="mode === 'register'">
+      <ng-container *ngIf="bursaryOpen !== false && mode === 'register'">
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Create your account</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Register using the location of your bursary office or campus.</p>
 
@@ -98,9 +107,26 @@
 
         <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="space-y-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-            <input type="text" formControlName="location" placeholder="Nairobi, Eldoret, Main Campus" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use the bursary office or campus location that matches your application.</p>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">County</label>
+            <select formControlName="county" (change)="onCountyChange($event)" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
+              <option value="" disabled>Select County</option>
+              <option *ngFor="let c of counties" [value]="c.county_name">{{ c.county_name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Sub-County</label>
+            <select formControlName="subcounty" (change)="onSubCountyChange($event)" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
+              <option value="" disabled>Select Sub-County</option>
+              <option *ngFor="let s of selectedCounty?.constituencies" [value]="s.constituency_name">{{ s.constituency_name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Ward</label>
+            <select formControlName="ward" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
+              <option value="" disabled>Select Ward</option>
+              <option *ngFor="let w of selectedSubCounty?.wards" [value]="w">{{ w }}</option>
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select the location of your bursary office.</p>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full name</label>
@@ -116,11 +142,23 @@
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
-            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Create a password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Create a password" class="w-full px-4 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />
+              <button type="button" (click)="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-0 bg-none border-none cursor-pointer text-sm">
+                <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Confirm password</label>
-            <input type="password" formControlName="confirm" placeholder="Repeat your password" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />
+            <div class="relative">
+              <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirm" placeholder="Repeat your password" class="w-full px-4 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />
+              <button type="button" (click)="showConfirmPassword = !showConfirmPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-0 bg-none border-none cursor-pointer text-sm">
+                <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
             <p *ngIf="registerForm.touched && registerForm.hasError('mismatch')" class="text-xs text-red-500 mt-1">Passwords do not match</p>
           </div>
 
@@ -129,8 +167,21 @@
             <span *ngIf="!registerLoading">Create Account</span>
             <span *ngIf="registerLoading">Creating…</span>
           </button>
+
+          <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            Already have an account? 
+            <a href="javascript:void(0)" (click)="setMode('login')" class="font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors" [style.color]="'var(--accent-600)'">
+              Sign in
+            </a>
+          </div>
         </form>
       </ng-container>
+      <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-slate-700 pt-6">
+        Are you an admin?
+        <a routerLink="/login" class="font-semibold hover:underline transition-colors ml-1" [style.color]="'var(--accent-600)'">
+          Go to Admin Login
+        </a>
+      </div>
     </ng-container>
   </div>
 

@@ -44,7 +44,6 @@ export declare class TenantPortalService {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;
@@ -94,7 +93,6 @@ export declare class TenantPortalService {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;
@@ -144,7 +142,6 @@ export declare class TenantPortalService {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;

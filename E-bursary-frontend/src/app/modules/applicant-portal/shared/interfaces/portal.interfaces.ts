@@ -47,7 +47,6 @@ export interface ApplicantApplication {
   parentNationalId?: string;
   bankName: string;
   accountNumber: string;
-  mpesaNumber: string;
   householdIncome: string;
   familyDependents: string;
   specialCircumstances: string;

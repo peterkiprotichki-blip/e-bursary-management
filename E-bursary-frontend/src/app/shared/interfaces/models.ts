@@ -40,8 +40,8 @@ export interface PropertyTenant {
   currentPropertyId: string;
   currentLeaseId: string;
   isActive: boolean;
-  documents: string[];
-  metadata: Record<string, any>;
+  documents?: string[];
+  metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
   // Optional enriched fields from API
@@ -99,15 +99,16 @@ export interface Payment {
   currency: string;
   paymentDate: string;
   paymentMethod: PaymentMethod;
-  paymentType: PaymentType;
   status: PaymentStatus;
   mpesaTransactionId: string;
   mpesaPhoneNumber: string;
   bankReference: string;
   chequeNumber: string;
   receiptNumber: string;
-  paymentPeriod: string;
-  notes: string;
+  paymentType: PaymentType;
+  paymentPeriod?: string; // e.g., '2026-04' or 'April 2026'
+  paymentDestination?: string;
+  notes?: string;
   propertyName: string;
   propertyTenantName: string;
   recordedBy: string;

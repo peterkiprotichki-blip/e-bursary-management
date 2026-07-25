@@ -36,7 +36,6 @@ export declare class TenantPortalController {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;
@@ -86,7 +85,6 @@ export declare class TenantPortalController {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;
@@ -136,7 +134,6 @@ export declare class TenantPortalController {
         parentNationalId: any;
         bankName: any;
         accountNumber: any;
-        mpesaNumber: any;
         householdIncome: any;
         familyDependents: any;
         specialCircumstances: any;

@@ -11,6 +11,7 @@ import { AuthService } from '../../../shared/services/auth/auth.service';
 import { PropertyFilterService } from '../../../shared/services/property-filter/property-filter.service';
 import { Payment, PaymentStatus, PaymentMethod, Property, Lease } from '../../../shared/interfaces/models';
 import { StkPushResult } from '../../../shared/components/stk-push/stk-push.component';
+import { BursaryService, BursaryApplication } from '../../../shared/services/bursary/bursary.service';
 
 @Component({
   selector: 'app-payments-list',
@@ -48,6 +49,10 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
   leaseSearch = '';
   showLeaseDropdown = false;
   selectedLease: Lease | null = null;
+  
+  // Bursary Applications for ng-select
+  bursaryApplications: BursaryApplication[] = [];
+  selectedApplication: BursaryApplication | null = null;
 
   // Record payment form
   showForm = false;
@@ -71,6 +76,7 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private propertyFilterService: PropertyFilterService,
+    private bursaryService: BursaryService,
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +95,7 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     if (!this.isTenant) {
       this.loadProperties();
       this.loadLeases();
+      this.loadApplications();
     }
     // Auto-refresh every 30 seconds
     this.refreshTimer = setInterval(() => {
@@ -143,6 +150,16 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
         this.enrichLeaseNames();
       },
       error: () => {},
+    });
+  }
+
+  loadApplications(): void {
+    this.bursaryService.getApplications().subscribe({
+      next: (res) => {
+        // Show awarded applications for disbursement (and maybe others just in case)
+        this.bursaryApplications = res.filter(a => a.stage === 'awarded' || a.stage === 'submitted' || a.stage === 'in_review');
+      },
+      error: () => {}
     });
   }
 
@@ -310,6 +327,31 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     };
   }
 
+  onApplicationSelect(): void {
+    if (this.selectedApplication) {
+      const today = new Date();
+      const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      this.selectedMonths = [currentMonth];
+      
+      this.form = {
+        ...this.form,
+        // Map BursaryApplication to payment fields.
+        leaseId: this.selectedApplication._id, // Fallback to pass DTO validation
+        propertyTenantId: this.selectedApplication._id, // Fallback to pass DTO validation
+        propertyId: this.selectedApplication._id, // Fallback to pass DTO validation
+        propertyTenantName: this.selectedApplication.fullName,
+        propertyName: this.selectedApplication.course || 'Bursary', 
+        paymentDestination: this.selectedApplication.paymentDestination || this.selectedApplication.institution,
+        currency: 'KES',
+        amount: this.selectedApplication.awardAmount || undefined,
+        paymentPeriod: this.formatMonthsLabel(this.selectedMonths),
+      };
+    } else {
+      this.form.amount = undefined;
+      this.form.paymentDestination = undefined;
+    }
+  }
+
   /** Returns the balance if payment type is rent (outstanding balance), otherwise 0 */
   getRentAmountForForm(lease: Lease): number {
     if (this.form.paymentType === 'rent') {
@@ -320,9 +362,9 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
   }
 
   onPaymentTypeChange(): void {
-    if (!this.selectedLease) return;
+    if (!this.selectedApplication) return;
     if (this.form.paymentType === 'rent') {
-      this.form.amount = this.getRentAmountForForm(this.selectedLease);
+      this.form.amount = this.selectedApplication.awardAmount || 0;
     } else {
       // Non-rent types: clear amount so user enters manually
       this.form.amount = undefined;
@@ -331,8 +373,8 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
 
   /** Balance that will remain AFTER this payment (only meaningful for rent) */
   get remainingAfterPayment(): number | null {
-    if (!this.selectedLease || this.form.paymentType !== 'rent') return null;
-    const balance = this.leaseBalances.get(this.selectedLease._id) ?? this.selectedLease.rentAmount;
+    if (!this.selectedApplication || this.form.paymentType !== 'rent') return null;
+    const balance = this.selectedApplication.awardAmount || 0;
     return Math.max(0, balance - (this.form.amount || 0));
   }
 
@@ -387,6 +429,11 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     this.leaseSearch = '';
     this.form = { paymentDate: this.form.paymentDate, paymentMethod: this.form.paymentMethod, paymentType: this.form.paymentType, currency: 'KES' };
   }
+  
+  clearApplicationSelection(): void {
+    this.selectedApplication = null;
+    this.form = { paymentDate: this.form.paymentDate, paymentMethod: this.form.paymentMethod, paymentType: this.form.paymentType, currency: 'KES' };
+  }
 
   goToPage(p: number): void { this.page = p; }
   viewPayment(id: string): void { this.router.navigate(['/payments', id]); }
@@ -395,10 +442,9 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     const today = new Date();
     const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     this.selectedMonths = [currentMonth];
-    this.form = { paymentDate: today.toISOString().split('T')[0], paymentMethod: 'mpesa', paymentType: 'rent', currency: 'KES' };
-    this.selectedLease = null;
-    this.leaseSearch = '';
+    this.form = { paymentDate: today.toISOString().split('T')[0], paymentMethod: 'cheque', paymentType: 'rent', currency: 'KES' };
     this.showLeaseDropdown = false;
+    this.selectedApplication = null;
     this.showForm = true;
   }
 
@@ -410,7 +456,7 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
-    if (!this.form.amount || !this.form.leaseId) return;
+    if (!this.form.amount) return;
     this.saving = true;
     const payload = { ...this.form, paymentDate: this.withCurrentTime(this.form.paymentDate ?? '') };
     this.paymentsService.create(payload).subscribe({
@@ -418,11 +464,6 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
         this.saving = false;
         this.showForm = false;
         this.loadPayments();
-        // Refresh the balance for this lease
-        if (this.selectedLease) {
-          this.leaseBalances.delete(this.selectedLease._id);
-          this.loadLeaseBalance(this.selectedLease);
-        }
       },
       error: () => { this.saving = false; },
     });
@@ -440,7 +481,7 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
   }
 
   openStkPush(): void {
-    if (!this.selectedLease || !this.form.amount) return;
+    if (!this.selectedApplication || !this.form.amount) return;
     this.showStkPush = true;
   }
 
@@ -448,11 +489,11 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
     this.showStkPush = false;
     this.saving = true;
     this.paymentsService.confirmMpesaPayment({
-      leaseId: this.selectedLease?._id,
-      propertyTenantId: this.selectedLease?.propertyTenantId,
-      propertyId: this.selectedLease?.propertyId,
-      propertyName: this.selectedLease?.propertyName,
-      propertyTenantName: this.selectedLease?.propertyTenantName,
+      leaseId: this.selectedApplication?._id, // fallback for schema if required
+      propertyTenantId: undefined,
+      propertyId: undefined,
+      propertyName: this.selectedApplication?.course,
+      propertyTenantName: this.selectedApplication?.fullName,
       amount: this.form.amount!,
       phoneNumber: this.form.mpesaPhoneNumber || '',
       mpesaReceiptNumber: result.mpesaReceiptNumber,
@@ -465,10 +506,6 @@ export class PaymentsListComponent implements OnInit, OnDestroy {
         this.saving = false;
         this.showForm = false;
         this.loadPayments();
-        if (this.selectedLease) {
-          this.leaseBalances.delete(this.selectedLease._id);
-          this.loadLeaseBalance(this.selectedLease);
-        }
       },
       error: () => { this.saving = false; },
     });

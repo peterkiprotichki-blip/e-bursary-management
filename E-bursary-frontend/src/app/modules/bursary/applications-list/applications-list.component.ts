@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BursaryApplication, BursaryService } from '../../../shared/services/bursary/bursary.service';
+import { Router } from '@angular/router';
 import { ThemeService } from '../../../shared/services/theme/theme.service';
 import { PropertyTenantsService } from '../../../shared/services/property-tenants/property-tenants.service';
 
@@ -19,9 +20,6 @@ export class ApplicationsListComponent implements OnInit {
   awardAmount = 0;
   paymentDestination = 'Direct to Institution';
 
-  viewingApp: any | null = null;
-  viewingAppLoading = false;
-  selectedPreviewUrl = '';
 
   editingApp: BursaryApplication | null = null;
   editForm: any = {};
@@ -29,6 +27,7 @@ export class ApplicationsListComponent implements OnInit {
   constructor(
     private readonly bursaryService: BursaryService,
     private readonly propertyTenantsService: PropertyTenantsService,
+    private readonly router: Router,
     public readonly themeService: ThemeService,
   ) {}
 
@@ -52,7 +51,6 @@ export class ApplicationsListComponent implements OnInit {
   }
 
   openVettingModal(app: BursaryApplication, stage: 'in_review' | 'awarded' | 'rejected'): void {
-    this.viewingApp = null;
     this.selectedApp = app;
     this.modalStage = stage;
     this.reviewNotes = app.reviewNotes || '';
@@ -60,33 +58,15 @@ export class ApplicationsListComponent implements OnInit {
     this.paymentDestination = app.paymentDestination || 'Direct to Institution';
   }
 
-  openViewModal(app: BursaryApplication): void {
-    this.viewingApp = null;
-    this.viewingAppLoading = true;
-    this.selectedApp = null; // Do NOT set selectedApp here to prevent showing the vetting modal!
-    this.propertyTenantsService.getById(app._id).subscribe({
-      next: (pt) => {
-        this.viewingApp = pt.metadata?.['applicantPortal'] || {};
-        this.viewingApp._id = pt._id;
-        this.viewingApp.stage = app.stage;
-        this.viewingApp.originalApp = app; // store original application for actions
-        this.viewingAppLoading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load applicant details.';
-        this.viewingAppLoading = false;
-      }
-    });
+  viewApp(app: BursaryApplication): void {
+    this.router.navigate(['/bursary/applications', app._id]);
   }
 
   closeModal(): void {
     this.selectedApp = null;
   }
 
-  closeViewModal(): void {
-    this.viewingApp = null;
-    this.selectedApp = null;
-  }
+
 
   submitVetting(): void {
     if (!this.selectedApp) return;
@@ -106,7 +86,6 @@ export class ApplicationsListComponent implements OnInit {
       next: () => {
         this.updatingId = '';
         this.selectedApp = null;
-        this.viewingApp = null;
         this.loadApplications();
       },
       error: (err: any) => {

@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TenantPortalAuthService } from '../../shared/services/tenant-portal-auth.service';
 import { PortalThemeService } from '../../shared/services/portal-theme.service';
+import { KENYA_DATA } from '../../shared/services/kenya-data';
+import { TenantPortalService } from '../../shared/services/tenant-portal.service';
 
 @Component({
   selector: 'app-portal-login',
@@ -19,9 +21,15 @@ export class PortalLoginComponent implements OnInit {
   registerError = '';
   success = '';
   showPassword = false;
-  mode: 'login' | 'register' = 'login';
+  showConfirmPassword = false;
+  mode: 'login' | 'register' = 'register';
   showClosedModal = false;
+  bursaryOpen: boolean | null = null;
   private savedThemeDark: boolean | null = null;
+  
+  counties = KENYA_DATA;
+  selectedCounty: any = null;
+  selectedSubCounty: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -29,6 +37,7 @@ export class PortalLoginComponent implements OnInit {
     public theme: PortalThemeService,
     private router: Router,
     private route: ActivatedRoute,
+    private portalService: TenantPortalService
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -36,7 +45,9 @@ export class PortalLoginComponent implements OnInit {
     });
 
     this.registerForm = this.fb.group({
-      location: ['', Validators.required],
+      county: ['', Validators.required],
+      subcounty: ['', Validators.required],
+      ward: ['', Validators.required],
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
@@ -56,10 +67,27 @@ export class PortalLoginComponent implements OnInit {
           this.router.navigate(['/applicant-portal/dashboard']);
         } else {
           // Stale/invalid token was cleared — show login form
-          this.checkingSession = false;
+          this.checkBursaryStatus();
         }
       });
+    } else {
+      this.checkBursaryStatus();
     }
+  }
+
+  private checkBursaryStatus() {
+    this.checkingSession = true;
+    this.portalService.getOrgSettings().subscribe({
+      next: (settings) => {
+        this.bursaryOpen = settings.bursaryOpen !== false;
+        localStorage.setItem('portal_bursary_open', String(this.bursaryOpen));
+        this.checkingSession = false;
+      },
+      error: () => {
+        this.bursaryOpen = true; // Fallback
+        this.checkingSession = false;
+      }
+    });
   }
 
   submit() {
@@ -83,13 +111,30 @@ export class PortalLoginComponent implements OnInit {
     });
   }
 
+  onCountyChange(event: Event) {
+    const countyName = (event.target as HTMLSelectElement).value;
+    this.selectedCounty = this.counties.find(c => c.county_name === countyName);
+    this.selectedSubCounty = null;
+    this.registerForm.patchValue({ subcounty: '', ward: '' });
+  }
+
+  onSubCountyChange(event: Event) {
+    const subcountyName = (event.target as HTMLSelectElement).value;
+    this.selectedSubCounty = this.selectedCounty?.constituencies.find((c: any) => c.constituency_name === subcountyName);
+    this.registerForm.patchValue({ ward: '' });
+  }
+
   submitRegister() {
     if (this.registerForm.invalid) return;
     this.registerLoading = true;
     this.registerError = '';
     this.success = '';
 
-    const { confirm, ...payload } = this.registerForm.value;
+    const { confirm, county, subcounty, ward, ...rest } = this.registerForm.value;
+    const payload = {
+      ...rest,
+      location: `${ward}, ${subcounty}, ${county}`
+    };
     this.auth.register(payload).subscribe({
       next: () => {
         this.success = 'Account created. You are now signed in.';

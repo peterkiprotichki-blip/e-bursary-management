@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TenantPortalService } from '../shared/services/tenant-portal.service';
-import { ImgbbUploadService } from '../shared/services/imgbb-upload.service';
+import { FileUploadService } from '../shared/services/file-upload.service';
 import { ApplicantApplication, ApplicantDocument } from '../shared/interfaces/portal.interfaces';
 
 @Component({
@@ -19,7 +19,7 @@ export class PortalPaymentsComponent implements OnInit {
 
   constructor(
     private portalService: TenantPortalService,
-    private imgbbService: ImgbbUploadService,
+    private fileUploadService: FileUploadService,
   ) {}
 
   ngOnInit() {
@@ -44,7 +44,7 @@ export class PortalPaymentsComponent implements OnInit {
     this.saving = true;
     this.error = '';
     this.success = '';
-    this.imgbbService.uploadImage(file).subscribe({
+    this.fileUploadService.uploadFile(file).subscribe({
       next: (imageUrl) => {
         this.documentPreview.set(key, imageUrl);
         const documents = [...(this.application?.documents || [])].filter((doc) => doc.name !== key);
@@ -62,7 +62,7 @@ export class PortalPaymentsComponent implements OnInit {
         });
       },
       error: (err) => {
-        this.error = err.message || 'Image upload to ImgBB failed.';
+        this.error = err.message || 'File upload failed.';
         this.saving = false;
       }
     });

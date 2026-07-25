@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 
@@ -28,6 +29,7 @@ import { ReportsComponent } from './modules/reports/reports.component';
 // Bursary
 import { ApplicantsListComponent } from './modules/bursary/applicants-list/applicants-list.component';
 import { ApplicationsListComponent } from './modules/bursary/applications-list/applications-list.component';
+import { ApplicationDetailComponent } from './modules/bursary/application-detail/application-detail.component';
 import { ProgramsListComponent } from './modules/bursary/programs-list/programs-list.component';
 import { AllocationsListComponent } from './modules/bursary/allocations-list/allocations-list.component';
 import { DocumentsListComponent } from './modules/bursary/documents-list/documents-list.component';
@@ -59,6 +61,7 @@ import { TenantPortalAuthInterceptor } from './modules/applicant-portal/shared/i
     DashboardComponent,
     ApplicantsListComponent,
     ApplicationsListComponent,
+    ApplicationDetailComponent,
     ProgramsListComponent,
     AllocationsListComponent,
     DocumentsListComponent,
@@ -79,6 +82,7 @@ import { TenantPortalAuthInterceptor } from './modules/applicant-portal/shared/i
     CommonModule,
     ColorPickerComponent,
     StkPushComponent,
+    NgSelectModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { switchMap } from 'rxjs/operators';
 import { TenantPortalService } from '../shared/services/tenant-portal.service';
 import { TenantPortalAuthService } from '../shared/services/tenant-portal-auth.service';
-import { ImgbbUploadService } from '../shared/services/imgbb-upload.service';
+import { FileUploadService } from '../shared/services/file-upload.service';
 import { ApplicantApplication, ApplicantDocument } from '../shared/interfaces/portal.interfaces';
 
 interface DocSlot {
@@ -45,7 +45,7 @@ export class PortalLeaseComponent implements OnInit {
     private fb: FormBuilder,
     private portalService: TenantPortalService,
     private auth: TenantPortalAuthService,
-    private imgbbUpload: ImgbbUploadService,
+    private fileUpload: FileUploadService,
   ) {
     this.form = this.fb.group({
       fullName: ['', Validators.required],
@@ -63,8 +63,7 @@ export class PortalLeaseComponent implements OnInit {
       parentEmail: [''],
       parentNationalId: [''],
       bankName: ['', Validators.required],
-      accountNumber: [''],
-      mpesaNumber: [''],
+      accountNumber: ['', Validators.required],
       householdIncome: ['', Validators.required],
       familyDependents: ['', Validators.required],
       specialCircumstances: [''],
@@ -91,20 +90,42 @@ export class PortalLeaseComponent implements OnInit {
   }
 
   startNewApplication() {
+    if (!this.bursaryOpen) return;
     this.error = '';
     this.success = '';
     this.levelType = null;
     this.form.reset();
+
+    const profile = this.auth.getProfile();
+    if (profile) {
+      this.form.patchValue({
+        fullName: profile.name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        idNumber: profile.idNumber || '',
+      });
+    }
+
     this.documentPreviews.clear();
     this.uploadErrors.clear();
     this.viewMode = 'edit';
   }
 
   editApplication() {
+    if (!this.bursaryOpen) return;
     this.error = '';
     this.success = '';
     if (!this.levelType) {
       this.form.reset();
+      const profile = this.auth.getProfile();
+      if (profile) {
+        this.form.patchValue({
+          fullName: profile.name || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          idNumber: profile.idNumber || '',
+        });
+      }
       this.documentPreviews.clear();
       this.uploadErrors.clear();
     }
@@ -179,11 +200,12 @@ export class PortalLeaseComponent implements OnInit {
           this.levelType = existingLevel;
           this.updateValidators(existingLevel);
         }
+        const profile = this.auth.getProfile();
         this.form.patchValue({
-          fullName: application.fullName,
-          phone: application.phone,
-          email: application.email,
-          idNumber: application.idNumber,
+          fullName: application.fullName || profile?.name || '',
+          phone: application.phone || profile?.phone || '',
+          email: application.email || profile?.email || '',
+          idNumber: application.idNumber || profile?.idNumber || '',
           levelType: existingLevel,
           institution: application.institution,
           admissionNumber: application.admissionNumber,
@@ -196,7 +218,6 @@ export class PortalLeaseComponent implements OnInit {
           parentNationalId: application.parentNationalId,
           bankName: application.bankName,
           accountNumber: application.accountNumber,
-          mpesaNumber: application.mpesaNumber,
           householdIncome: application.householdIncome,
           familyDependents: application.familyDependents,
           specialCircumstances: application.specialCircumstances,
@@ -266,9 +287,9 @@ export class PortalLeaseComponent implements OnInit {
       return;
     }
 
-    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validImageTypes.includes(file.type)) {
-      this.uploadErrors.set(key, 'Only JPEG, PNG, GIF, or WebP images are supported.');
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      this.uploadErrors.set(key, 'Only JPEG, PNG, GIF, WebP, or PDF files are supported.');
       input.value = '';
       return;
     }
@@ -283,7 +304,7 @@ export class PortalLeaseComponent implements OnInit {
     this.uploadErrors.delete(key);
     this.uploadingDocs.set(key, true);
 
-    this.imgbbUpload.uploadImage(file).subscribe({
+    this.fileUpload.uploadFile(file).subscribe({
       next: (imageUrl) => {
         this.uploadingDocs.set(key, false);
 

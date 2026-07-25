@@ -8,6 +8,7 @@ import { PaymentDetailComponent } from './modules/disbursements/payment-detail/p
 import { ReportsComponent } from './modules/reports/reports.component';
 import { ApplicantsListComponent } from './modules/bursary/applicants-list/applicants-list.component';
 import { ApplicationsListComponent } from './modules/bursary/applications-list/applications-list.component';
+import { ApplicationDetailComponent } from './modules/bursary/application-detail/application-detail.component';
 import { ProgramsListComponent } from './modules/bursary/programs-list/programs-list.component';
 import { AllocationsListComponent } from './modules/bursary/allocations-list/allocations-list.component';
 import { DocumentsListComponent } from './modules/bursary/documents-list/documents-list.component';
@@ -29,6 +30,7 @@ const routes: Routes = [
       // Bursary management routes
       { path: 'bursary/applicants', component: ApplicantsListComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin', 'manager'] } },
       { path: 'bursary/applications', component: ApplicationsListComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin', 'manager'] } },
+      { path: 'bursary/applications/:id', component: ApplicationDetailComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin', 'manager'] } },
       { path: 'bursary/programs', component: ProgramsListComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin'] } },
       { path: 'bursary/allocations', component: AllocationsListComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin'] } },
       { path: 'bursary/documents', component: DocumentsListComponent, canActivate: [RoleGuard], data: { roles: ['super_admin', 'admin', 'manager'] } },

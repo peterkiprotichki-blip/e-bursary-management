@@ -18,7 +18,6 @@ export declare class SaveApplicantApplicationDto {
     parentNationalId?: string;
     bankName?: string;
     accountNumber?: string;
-    mpesaNumber?: string;
     householdIncome?: string;
     familyDependents?: string;
     specialCircumstances?: string;

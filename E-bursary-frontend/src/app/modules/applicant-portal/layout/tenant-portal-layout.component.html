@@ -57,8 +57,8 @@
         <span class="topbar-property">· {{ orgName }}</span>
       </div>
       <div class="topbar-user" *ngIf="profile">
-        <div class="user-chip">{{ (profile?.name || 'A')[0] | uppercase }}</div>
-        <span class="user-chip-name text-gray-600 dark:text-slate-300">{{ profile?.name }}</span>
+        <div class="user-chip">{{ (profile.name || 'A')[0] | uppercase }}</div>
+        <span class="user-chip-name text-gray-600 dark:text-slate-300">{{ profile.name }}</span>
       </div>
       <!-- Theme Settings Button -->
       <button

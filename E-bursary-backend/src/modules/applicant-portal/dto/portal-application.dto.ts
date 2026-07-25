@@ -73,10 +73,6 @@ export class SaveApplicantApplicationDto {
 
   @IsOptional()
   @IsString()
-  mpesaNumber?: string;
-
-  @IsOptional()
-  @IsString()
   householdIncome?: string;
 
   @IsOptional()
