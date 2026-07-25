@@ -160,7 +160,8 @@ export class TenantPortalService {
     const profile = this.sanitize(tenant);
     const org = await this.tenantOrgModel.findById(tenant.tenantId).lean();
     const bursaryOpen = (org as any)?.settings?.bursaryOpen !== false;
-    return { token, profile, bursaryOpen };
+    const applicationDeadline = (org as any)?.settings?.applicationDeadline || '';
+    return { token, profile, bursaryOpen, applicationDeadline };
   }
 
   // ──── Profile ────────────────────────────────────────
@@ -300,6 +301,7 @@ export class TenantPortalService {
       mpesaClientId: (org as any)?.mpesaClientId || '',
       orgName: (org as any)?.name || '',
       bursaryOpen: (org as any)?.settings?.bursaryOpen !== false,
+      applicationDeadline: (org as any)?.settings?.applicationDeadline || '',
     };
   }
 

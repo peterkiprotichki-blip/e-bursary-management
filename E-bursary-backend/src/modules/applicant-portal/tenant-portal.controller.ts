@@ -9,8 +9,12 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { TenantPortalService } from './tenant-portal.service';
+import { FileUploadService, FileUploadInterface } from './services/file-upload.service';
 import { TenantPortalJwtGuard } from './guards/tenant-portal-jwt.guard';
 import { PortalLoginDto, PortalRegisterDto, PortalSetupPasswordDto, UpdatePortalProfileDto } from './dto/portal-auth.dto';
 import { SaveApplicantApplicationDto } from './dto/portal-application.dto';
@@ -19,7 +23,10 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 @ApiTags('Applicant Portal')
 @Controller('applicant-portal')
 export class TenantPortalController {
-  constructor(private readonly service: TenantPortalService) {}
+  constructor(
+    private readonly service: TenantPortalService,
+    private readonly fileUploadService: FileUploadService,
+  ) {}
 
   // ──── Public Auth ────────────────────────────────────
 
@@ -121,4 +128,32 @@ export class TenantPortalController {
   resendInvite(@Param('propertyTenantId') propertyTenantId: string, @Request() req: any) {
     return this.service.resendInvite(propertyTenantId, req.user.orgTenantId);
   }
+
+  // ──── File Upload ────────────────────────────────────
+
+  @ApiBearerAuth()
+  @UseGuards(TenantPortalJwtGuard)
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload applicant document/image' })
+  uploadFile(@UploadedFile() file: FileUploadInterface) {
+    try {
+      const result = this.fileUploadService.uploadFile(file);
+      return {
+        success: true,
+        data: {
+          url: result.url,
+          filename: result.filename,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error.message || 'File upload failed',
+        },
+      };
+    }
+  }
 }
+

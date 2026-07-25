@@ -14,6 +14,7 @@ const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const tenant_portal_controller_1 = require("./tenant-portal.controller");
 const tenant_portal_service_1 = require("./tenant-portal.service");
+const file_upload_service_1 = require("./services/file-upload.service");
 const tenant_portal_jwt_strategy_1 = require("./strategies/tenant-portal-jwt.strategy");
 const property_tenant_schema_1 = require("../applicants/schemas/property-tenant.schema");
 let TenantPortalModule = class TenantPortalModule {
@@ -35,7 +36,7 @@ exports.TenantPortalModule = TenantPortalModule = __decorate([
             }),
         ],
         controllers: [tenant_portal_controller_1.TenantPortalController],
-        providers: [tenant_portal_service_1.TenantPortalService, tenant_portal_jwt_strategy_1.TenantPortalJwtStrategy],
+        providers: [tenant_portal_service_1.TenantPortalService, tenant_portal_jwt_strategy_1.TenantPortalJwtStrategy, file_upload_service_1.FileUploadService],
         exports: [tenant_portal_service_1.TenantPortalService],
     })
 ], TenantPortalModule);

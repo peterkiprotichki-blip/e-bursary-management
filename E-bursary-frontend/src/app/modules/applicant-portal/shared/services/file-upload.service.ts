@@ -6,7 +6,8 @@ import { environment } from '../../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class FileUploadService {
-  private readonly uploadUrl = `${environment.apiUrl}/upload`;
+  private readonly apiUrl = environment.apiUrl || 'http://localhost:3400/api';
+  private readonly uploadUrl = `${this.apiUrl}/applicant-portal/upload`;
 
   constructor(private http: HttpClient) {}
 
@@ -31,10 +32,15 @@ export class FileUploadService {
 
     return this.http.post<any>(this.uploadUrl, formData).pipe(
       map((response) => {
-        if (response && response.url) {
-          return response.url;
+        if (response && response.success && response.data && response.data.url) {
+          // Convert relative URL to absolute if needed
+          const url = response.data.url;
+          if (url.startsWith('/')) {
+            return `${this.apiUrl}${url}`;
+          }
+          return url;
         }
-        throw new Error(response?.message || 'File upload failed.');
+        throw new Error(response?.error?.message || 'File upload failed.');
       }),
       catchError((error) => {
         const errorMsg = error?.error?.message || error?.message || 'Failed to upload file. Please try again.';

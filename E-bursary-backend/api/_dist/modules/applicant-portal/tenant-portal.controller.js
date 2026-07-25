@@ -14,14 +14,17 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TenantPortalController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const tenant_portal_service_1 = require("./tenant-portal.service");
+const file_upload_service_1 = require("./services/file-upload.service");
 const tenant_portal_jwt_guard_1 = require("./guards/tenant-portal-jwt.guard");
 const portal_auth_dto_1 = require("./dto/portal-auth.dto");
 const portal_application_dto_1 = require("./dto/portal-application.dto");
 const swagger_1 = require("@nestjs/swagger");
 let TenantPortalController = class TenantPortalController {
-    constructor(service) {
+    constructor(service, fileUploadService) {
         this.service = service;
+        this.fileUploadService = fileUploadService;
     }
     setupPassword(dto) {
         return this.service.setupPassword(dto);
@@ -58,6 +61,26 @@ let TenantPortalController = class TenantPortalController {
     }
     resendInvite(propertyTenantId, req) {
         return this.service.resendInvite(propertyTenantId, req.user.orgTenantId);
+    }
+    uploadFile(file) {
+        try {
+            const result = this.fileUploadService.uploadFile(file);
+            return {
+                success: true,
+                data: {
+                    url: result.url,
+                    filename: result.filename,
+                },
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: {
+                    message: error.message || 'File upload failed',
+                },
+            };
+        }
     }
 };
 exports.TenantPortalController = TenantPortalController;
@@ -181,9 +204,21 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], TenantPortalController.prototype, "resendInvite", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(tenant_portal_jwt_guard_1.TenantPortalJwtGuard),
+    (0, common_1.Post)('upload'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload applicant document/image' }),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], TenantPortalController.prototype, "uploadFile", null);
 exports.TenantPortalController = TenantPortalController = __decorate([
     (0, swagger_1.ApiTags)('Applicant Portal'),
     (0, common_1.Controller)('applicant-portal'),
-    __metadata("design:paramtypes", [tenant_portal_service_1.TenantPortalService])
+    __metadata("design:paramtypes", [tenant_portal_service_1.TenantPortalService,
+        file_upload_service_1.FileUploadService])
 ], TenantPortalController);
 //# sourceMappingURL=tenant-portal.controller.js.map

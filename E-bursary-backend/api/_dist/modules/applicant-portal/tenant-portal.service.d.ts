@@ -23,6 +23,7 @@ export declare class TenantPortalService {
         token: string;
         profile: any;
         bursaryOpen: boolean;
+        applicationDeadline: any;
     }>;
     getProfile(propertyTenantId: string): Promise<any>;
     updateProfile(propertyTenantId: string, dto: UpdatePortalProfileDto): Promise<any>;
@@ -188,6 +189,7 @@ export declare class TenantPortalService {
         mpesaClientId: any;
         orgName: any;
         bursaryOpen: boolean;
+        applicationDeadline: any;
     }>;
     resendInvite(propertyTenantId: string, orgTenantId: string): Promise<{
         message: string;

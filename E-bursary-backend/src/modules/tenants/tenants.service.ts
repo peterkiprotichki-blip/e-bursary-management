@@ -50,6 +50,18 @@ export class TenantsService {
   }
 
   async update(id: string, dto: UpdateTenantDto) {
+    // Safety: if bursary is being opened and no applicationDeadline is provided,
+    // set a default deadline 14 days from now.
+    if (dto && (dto as any).settings && (dto as any).settings.bursaryOpen === true) {
+      const settings = (dto as any).settings as Record<string, any>;
+      if (!settings.applicationDeadline) {
+        const now = new Date();
+        const deadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        settings.applicationDeadline = deadline.toISOString();
+        (dto as any).settings = settings;
+      }
+    }
+
     const tenant = await this.tenantRepository.update(id, dto as any);
     if (!tenant) throw new NotFoundException('Tenant not found');
     return tenant;

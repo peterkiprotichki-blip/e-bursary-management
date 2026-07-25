@@ -15,6 +15,7 @@ export class SettingsComponent implements OnInit {
   ];
 
   bursaryOpen = true;
+  applicationDeadline = '';
   statusSaving = false;
   statusSaved = false;
   statusError = '';
@@ -29,6 +30,7 @@ export class SettingsComponent implements OnInit {
     const tenant = this.activeTenant as any;
     if (tenant?.settings) {
       this.bursaryOpen = tenant.settings.bursaryOpen !== false;
+      this.applicationDeadline = tenant.settings.applicationDeadline || '';
     }
   }
 
@@ -52,8 +54,19 @@ export class SettingsComponent implements OnInit {
     this.statusSaving = true;
     this.statusError = '';
     this.statusSaved = false;
+      // If opening the bursary and no deadline is set, default to 14 days from today
+      if (this.bursaryOpen && !this.applicationDeadline) {
+        const now = new Date();
+        const deadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        // store as ISO date (date-only portion will be used by the input)
+        this.applicationDeadline = deadline.toISOString();
+      }
 
-    const newSettings = { ...(this.activeTenant.settings || {}), bursaryOpen: this.bursaryOpen };
+    const newSettings = {
+      ...(this.activeTenant.settings || {}),
+      bursaryOpen: this.bursaryOpen,
+      applicationDeadline: this.applicationDeadline,
+    };
     this.tenantsService.update(this.activeTenant._id, { settings: newSettings } as any).subscribe({
       next: () => {
         this.statusSaving = false;

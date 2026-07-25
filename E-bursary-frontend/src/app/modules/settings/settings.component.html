@@ -68,6 +68,17 @@
           </button>
         </div>
 
+        <div class="rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/60 p-3">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Application Deadline</label>
+          <input
+            type="date"
+            [value]="applicationDeadline"
+            (change)="applicationDeadline = $any($event.target).value"
+            class="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-gray-700 dark:text-gray-200"
+          />
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Set a closing date for the portal so applicants can see when applications end.</p>
+        </div>
+
         <div *ngIf="statusError" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-sm text-red-700 dark:text-red-300">
           {{ statusError }}
         </div>
