@@ -108,7 +108,7 @@ export class PortalLeaseComponent implements OnInit {
   }
 
   editApplication() {
-    if (!this.bursaryOpen) return;
+    if (!this.bursaryOpen || this.application?.submitted) return;
     this.error = '';
     this.success = '';
     if (!this.levelType) {
@@ -191,6 +191,7 @@ export class PortalLeaseComponent implements OnInit {
     this.portalService.getApplication().subscribe({
       next: (application) => {
         this.application = application;
+        this.submitted = Boolean(application.submitted);
         this.requiredDocs = (application.requiredDocuments || []).map((doc) => ({ name: doc.label }));
 
         this.docSlots.forEach((slot) => {

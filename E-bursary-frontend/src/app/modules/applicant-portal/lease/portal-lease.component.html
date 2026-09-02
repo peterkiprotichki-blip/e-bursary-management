@@ -24,7 +24,7 @@
   </div>
 
   <!-- ========== LIST VIEW (default) ========== -->
-  <ng-container *ngIf="!loading && viewMode === 'list' && !submitted">
+  <ng-container *ngIf="!loading && viewMode === 'list'">
     <!-- No application yet -->
     <div *ngIf="!application" class="max-w-lg mx-auto">
       <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-8 text-center">
@@ -95,11 +95,15 @@
             </td>
             <td class="px-4 py-3">
               <div class="flex flex-wrap gap-2">
-                <button (click)="editApplication()" [disabled]="!bursaryOpen"
+                <button *ngIf="!application.submitted" (click)="editApplication()" [disabled]="!bursaryOpen"
                   class="rounded-lg border border-indigo-300 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   [title]="!bursaryOpen ? 'Applications are currently closed' : ''">
-                  {{ bursaryOpen ? 'Edit' : 'View' }}
+                  Edit
                 </button>
+                <a *ngIf="application.submitted" routerLink="/applicant-portal/status"
+                  class="rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20">
+                  View Status
+                </a>
                 <button *ngIf="!application.submitted" (click)="editApplication()" [disabled]="saving || !bursaryOpen"
                   class="rounded-lg px-2.5 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                   style="background: var(--accent-600)"
@@ -457,7 +461,7 @@
   </ng-container>
 
   <!-- ========== SUBMITTED STATE ========== -->
-  <ng-container *ngIf="!loading && submitted">
+  <ng-container *ngIf="!loading && submitted && viewMode === 'edit'">
     <div class="max-w-lg mx-auto bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-8 text-center">
       <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-2xl text-green-600 dark:text-green-400 mx-auto mb-5">
         <i class="fas fa-check-circle"></i>
