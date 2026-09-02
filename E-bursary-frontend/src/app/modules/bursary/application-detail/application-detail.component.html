@@ -34,7 +34,7 @@
     <div class="px-6 py-5 border-b border-gray-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
       <div>
         <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ viewingApp.fullName }}</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">Level: {{ viewingApp.levelType === 'high_school' ? 'Secondary / High School' : 'University / College' }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 capitalize mt-1">Level: {{ viewingApp.levelType === 'high_school' ? 'Secondary / High School' : viewingApp.levelType === 'primary_school' ? 'Primary School' : 'University / College' }}</p>
       </div>
       <div class="flex items-center gap-3">
         <button (click)="openVettingModal(viewingApp.originalApp, 'in_review')" class="px-4 py-2 text-sm font-semibold rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30 transition-colors flex items-center gap-2">
@@ -87,15 +87,15 @@
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Admission Number</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.admissionNumber }}</p>
           </div>
-          <div *ngIf="viewingApp.levelType === 'high_school'">
+          <div *ngIf="isSchoolLevel(viewingApp.levelType)">
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Form / Level</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.formOrLevel }}</p>
           </div>
-          <div *ngIf="viewingApp.levelType !== 'high_school'" class="col-span-2">
+          <div *ngIf="!isSchoolLevel(viewingApp.levelType)" class="col-span-2">
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Course of Study</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.course || '—' }}</p>
           </div>
-          <div *ngIf="viewingApp.levelType !== 'high_school'">
+          <div *ngIf="!isSchoolLevel(viewingApp.levelType)">
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Year of Study</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.yearOfStudy || '—' }}</p>
           </div>
@@ -114,11 +114,11 @@
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Contact</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentPhone }}</p>
           </div>
-          <div *ngIf="viewingApp.levelType === 'high_school'">
+          <div *ngIf="isSchoolLevel(viewingApp.levelType)">
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Parent Email</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentEmail || '—' }}</p>
           </div>
-          <div *ngIf="viewingApp.levelType === 'high_school'">
+          <div *ngIf="isSchoolLevel(viewingApp.levelType)">
             <span class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">Parent ID</span>
             <p class="font-medium text-gray-900 dark:text-white mt-1">{{ viewingApp.parentNationalId || '—' }}</p>
           </div>

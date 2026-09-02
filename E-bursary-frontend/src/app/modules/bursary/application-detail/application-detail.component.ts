@@ -92,6 +92,10 @@ export class ApplicationDetailComponent implements OnInit {
     return map[name] || name;
   }
 
+  isSchoolLevel(levelType: string): boolean {
+    return levelType === 'high_school' || levelType === 'primary_school';
+  }
+
   badgeClass(stage: string): string {
     const map: Record<string, string> = {
       submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
