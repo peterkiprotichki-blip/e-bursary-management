@@ -199,12 +199,12 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
         if (!tenant || tenant.isDeleted)
             throw new common_1.NotFoundException('Applicant not found');
         const current = this.getApplicantPortalState(tenant);
-        const isHighSchool = (current.levelType || 'university') === 'high_school';
+        const isSchoolLevel = current.levelType === 'high_school' || current.levelType === 'primary_school';
         const isUniversity = (current.levelType || 'university') === 'university';
         const idNumber = (current.idNumber || '').trim();
         const admissionNumber = (current.admissionNumber || '').trim();
         const course = String(current.course || '').trim();
-        if (!isHighSchool && !idNumber) {
+        if (!isSchoolLevel && !idNumber) {
             throw new common_1.BadRequestException('National ID/Passport is required to submit your application.');
         }
         if (!admissionNumber) {
@@ -213,7 +213,7 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
         if (isUniversity && !course) {
             throw new common_1.BadRequestException('Course of Study is required to submit a university application.');
         }
-        if (isHighSchool) {
+        if (isSchoolLevel) {
             if (!String(current.parentEmail || '').trim()) {
                 throw new common_1.BadRequestException('Parent Email is required to submit your application.');
             }
@@ -221,22 +221,24 @@ let TenantPortalService = TenantPortalService_1 = class TenantPortalService {
                 throw new common_1.BadRequestException('Parent National ID is required to submit your application.');
             }
         }
-        const requiredDocumentKeys = isHighSchool
+        const requiredDocumentKeys = isSchoolLevel
             ? ['passport-photo', 'fee-structure']
             : ['national-id', 'fee-structure', 'course-details', 'passport-photo'];
         const uploadedDocumentKeys = new Set((current.documents || []).map((doc) => String(doc?.name || '').toLowerCase()));
         if (requiredDocumentKeys.some((key) => !uploadedDocumentKeys.has(key))) {
             throw new common_1.BadRequestException('Please upload all required documents before submitting your application.');
         }
+        const duplicateKeys = [
+            { 'metadata.applicantPortal.admissionNumber': admissionNumber },
+        ];
+        if (idNumber) {
+            duplicateKeys.unshift({ idNumber }, { 'metadata.applicantPortal.idNumber': idNumber });
+        }
         const duplicate = await this.propertyTenantModel.findOne({
             tenantId: tenant.tenantId,
             _id: { $ne: tenant._id },
             isDeleted: false,
-            $or: [
-                { idNumber: idNumber },
-                { 'metadata.applicantPortal.idNumber': idNumber },
-                { 'metadata.applicantPortal.admissionNumber': admissionNumber }
-            ],
+            $or: duplicateKeys,
             'metadata.applicantPortal.submitted': true,
         });
         if (duplicate) {
