@@ -36,7 +36,7 @@ let BursaryService = BursaryService_1 = class BursaryService {
     }
     async getDashboardSummary(tenantId) {
         const applicants = await this.propertyTenantModel
-            .find({ tenantId, isDeleted: false })
+            .find({ ...(tenantId ? { tenantId } : {}), isDeleted: false })
             .select('name email metadata createdAt')
             .lean();
         const totalApplicants = applicants.length;
@@ -45,7 +45,7 @@ let BursaryService = BursaryService_1 = class BursaryService {
         const awarded = applicants.filter((a) => a?.metadata?.applicantPortal?.stage === 'awarded').length;
         const rejected = applicants.filter((a) => a?.metadata?.applicantPortal?.stage === 'rejected').length;
         const payments = await this.paymentModel
-            .find({ tenantId, isDeleted: false, status: 'completed' })
+            .find({ ...(tenantId ? { tenantId } : {}), isDeleted: false, status: 'completed' })
             .select('amount paymentDate')
             .lean();
         const totalDisbursed = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -67,7 +67,7 @@ let BursaryService = BursaryService_1 = class BursaryService {
     }
     async listApplications(tenantId) {
         const applicants = await this.propertyTenantModel
-            .find({ tenantId, isDeleted: false })
+            .find({ ...(tenantId ? { tenantId } : {}), isDeleted: false })
             .select('name email phone metadata createdAt updatedAt')
             .sort({ updatedAt: -1 })
             .lean();
@@ -199,7 +199,7 @@ let BursaryService = BursaryService_1 = class BursaryService {
         const keys = [
             'fullName', 'phone', 'email', 'idNumber', 'institution', 'course',
             'admissionNumber', 'formOrLevel', 'yearOfStudy', 'levelType',
-            'parentName', 'parentPhone', 'parentEmail', 'parentNationalId',
+            'parentName', 'parentPhone', 'parentEmail', 'parentNationalId', 'disabilityStatus',
             'bankName', 'accountNumber', 'mpesaNumber',
             'householdIncome', 'familyDependents', 'specialCircumstances',
             'personalStatement', 'guardianNotes',
@@ -270,6 +270,10 @@ let BursaryService = BursaryService_1 = class BursaryService {
         };
     }
     async sendStageNotificationEmail(to, fullName, data) {
+        if (process.env.OFFLINE_MODE === 'true') {
+            this.logger.log(`Email notification skipped in offline mode for ${to}`);
+            return;
+        }
         const copy = this.stageCopy(data.stage);
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4400';
         const notes = data.reviewNotes?.trim();

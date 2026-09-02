@@ -18,9 +18,9 @@ interface BursaryProgram {
 export class ProgramsListComponent implements OnInit {
   programs: BursaryProgram[] = [
     { id: '1', name: 'University & College Funding Scheme', year: '2026', budget: 15000000, allocated: 4500000, status: 'active', description: 'Bursary funding targeting tertiary education students.' },
-    { id: '2', name: 'Secondary School Ward Allocation', year: '2026', budget: 10000000, allocated: 2300000, status: 'active', description: 'High school tuition fee funding allocated per ward.' },
-    { id: '3', name: 'Special Disability Support Grant', year: '2026', budget: 3000000, allocated: 900000, status: 'active', description: 'Grant scheme targeting physically challenged students.' },
-    { id: '4', name: 'Emergency Relief Bursary 2025', year: '2025', budget: 5000000, allocated: 5000000, status: 'closed', description: 'Disaster response support scheme for low income families.' }
+    { id: '2', name: 'Primary School Students Support Fund', year: '2026', budget: 12000000, allocated: 2800000, status: 'active', description: 'Education support for primary school learners in need of bursary assistance.' },
+    { id: '3', name: 'Secondary School Ward Allocation', year: '2026', budget: 10000000, allocated: 2300000, status: 'active', description: 'High school tuition fee funding allocated per ward.' },
+    { id: '4', name: 'Special Disability Support Grant', year: '2026', budget: 3000000, allocated: 900000, status: 'active', description: 'Grant scheme targeting physically challenged students.' }
   ];
 
   selectedProg: BursaryProgram | null = null;

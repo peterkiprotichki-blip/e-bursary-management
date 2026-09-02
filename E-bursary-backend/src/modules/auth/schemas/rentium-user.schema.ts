@@ -93,7 +93,7 @@ export const DEFAULT_TENANT_PERMISSIONS = [
   Permission.EDIT_MAINTENANCE_REQUESTS,
 ];
 
-@Schema({ timestamps: true })
+@Schema({ collection: 'e-bursarycusers', timestamps: true })
 export class RentiumUser extends BaseDocument {
   @Prop({ required: true })
   name: string;

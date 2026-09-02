@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as https from 'https';
 
 @Injectable()
@@ -47,6 +47,9 @@ export class MpesaService {
   }
 
   async getAccessToken(): Promise<string> {
+    if (process.env.OFFLINE_MODE === 'true') {
+      throw new BadRequestException('M-Pesa is unavailable while E-Bursary is running offline.');
+    }
     const credentials = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
     const result = await this.httpsRequest({
       hostname: this.baseUrl,

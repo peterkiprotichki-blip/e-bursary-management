@@ -5,6 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class GoogleAuthGuard extends AuthGuard('google') {
 	canActivate(context: ExecutionContext) {
 		const hasGoogleOAuthConfig =
+			process.env.OFFLINE_MODE !== 'true' &&
 			!!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
 
 		if (!hasGoogleOAuthConfig) {

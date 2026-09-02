@@ -1,5 +1,14 @@
-import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+export interface FileUploadInterface {
+    buffer: Buffer;
+    originalname: string;
+    mimetype: string;
+    size: number;
+}
 export declare class UploadService {
+    private readonly uploadDir;
     constructor();
-    uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse>;
+    uploadFile(file: FileUploadInterface): {
+        url: string;
+        filename: string;
+    };
 }

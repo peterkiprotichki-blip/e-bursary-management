@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TenantPortalAuthService } from '../../shared/services/tenant-portal-auth.service';
 import { PortalThemeService } from '../../shared/services/portal-theme.service';
-import { KENYA_DATA } from '../../shared/services/kenya-data';
 import { TenantPortalService } from '../../shared/services/tenant-portal.service';
 
 @Component({
@@ -22,14 +21,11 @@ export class PortalLoginComponent implements OnInit {
   success = '';
   showPassword = false;
   showConfirmPassword = false;
-  mode: 'login' | 'register' = 'register';
+  mode: 'login' | 'register' = 'login';
   showClosedModal = false;
   bursaryOpen: boolean | null = null;
   private savedThemeDark: boolean | null = null;
   
-  counties = KENYA_DATA;
-  selectedCounty: any = null;
-  selectedSubCounty: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -45,9 +41,6 @@ export class PortalLoginComponent implements OnInit {
     });
 
     this.registerForm = this.fb.group({
-      county: ['', Validators.required],
-      subcounty: ['', Validators.required],
-      ward: ['', Validators.required],
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
@@ -111,30 +104,13 @@ export class PortalLoginComponent implements OnInit {
     });
   }
 
-  onCountyChange(event: Event) {
-    const countyName = (event.target as HTMLSelectElement).value;
-    this.selectedCounty = this.counties.find(c => c.county_name === countyName);
-    this.selectedSubCounty = null;
-    this.registerForm.patchValue({ subcounty: '', ward: '' });
-  }
-
-  onSubCountyChange(event: Event) {
-    const subcountyName = (event.target as HTMLSelectElement).value;
-    this.selectedSubCounty = this.selectedCounty?.constituencies.find((c: any) => c.constituency_name === subcountyName);
-    this.registerForm.patchValue({ ward: '' });
-  }
-
   submitRegister() {
     if (this.registerForm.invalid) return;
     this.registerLoading = true;
     this.registerError = '';
     this.success = '';
 
-    const { confirm, county, subcounty, ward, ...rest } = this.registerForm.value;
-    const payload = {
-      ...rest,
-      location: `${ward}, ${subcounty}, ${county}`
-    };
+    const { confirm, ...payload } = this.registerForm.value;
     this.auth.register(payload).subscribe({
       next: () => {
         this.success = 'Account created. You are now signed in.';

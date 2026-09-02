@@ -167,7 +167,7 @@ __decorate([
     __metadata("design:type", String)
 ], RentiumUser.prototype, "activeTenantId", void 0);
 exports.RentiumUser = RentiumUser = __decorate([
-    (0, mongoose_1.Schema)({ timestamps: true })
+    (0, mongoose_1.Schema)({ collection: 'e-bursarycusers', timestamps: true })
 ], RentiumUser);
 exports.RentiumUserSchema = mongoose_1.SchemaFactory.createForClass(RentiumUser);
 exports.RentiumUserSchema.pre('save', function normalizeLegacyAuthProvider(next) {

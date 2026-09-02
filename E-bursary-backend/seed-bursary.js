@@ -423,11 +423,11 @@ async function run() {
   console.log('  E-BURSARY DATABASE SEEDING COMPLETED SUCCESSFULLY!');
   console.log('======================================================');
   console.log('  1. ADMIN SIDE (Super Admin Dashboard)');
-  console.log('     URL      : http://localhost:4200/login');
+  console.log('     URL      : http://localhost:4400/login');
   console.log('     Email    : superadmin@e-bursary.co.ke');
   console.log('     Password : SuperAdmin@2026');
   console.log('  2. APPLICANT PORTAL LOGIN');
-  console.log('     URL      : http://localhost:4200/applicant-portal/login');
+  console.log('     URL      : http://localhost:4400/applicant-portal/login');
   console.log('     Student 1: kiprotichkirui301@gmail.com / Kiprotich@2026 (Awarded)');
   console.log('     Student 2: jane.test@e-bursary.co.ke / Jane@1234 (Submitted)');
   console.log('     Student 3: peter.test@e-bursary.co.ke / Peter@1234 (In Review)');

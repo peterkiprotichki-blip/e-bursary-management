@@ -111,12 +111,10 @@ export class TenantPortalController {
 
   // ──── Org Settings ───────────────────────────────────
 
-  @ApiBearerAuth()
-  @UseGuards(TenantPortalJwtGuard)
   @Get('org-settings')
-  @ApiOperation({ summary: 'Get organisation settings (incl. mpesaClientId)' })
-  getOrgSettings(@Request() req: any) {
-    return this.service.getOrgSettings(req.user.orgTenantId);
+  @ApiOperation({ summary: 'Get organisation settings (public for pre-login portal access checks)' })
+  getOrgSettings() {
+    return this.service.getOrgSettings();
   }
 
   // ──── Resend Invite (admin-side utility) ─────────────

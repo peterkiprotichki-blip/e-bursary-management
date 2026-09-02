@@ -95,7 +95,7 @@
 
       <ng-container *ngIf="bursaryOpen !== false && mode === 'register'">
         <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Create your account</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Register using the location of your bursary office or campus.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">Create an account to begin your bursary application.</p>
 
         <div *ngIf="registerError" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 dark:text-red-300 mb-4">
           {{ registerError }}
@@ -106,28 +106,6 @@
         </div>
 
         <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="space-y-4">
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">County</label>
-            <select formControlName="county" (change)="onCountyChange($event)" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
-              <option value="" disabled>Select County</option>
-              <option *ngFor="let c of counties" [value]="c.county_name">{{ c.county_name }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Sub-County</label>
-            <select formControlName="subcounty" (change)="onSubCountyChange($event)" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
-              <option value="" disabled>Select Sub-County</option>
-              <option *ngFor="let s of selectedCounty?.constituencies" [value]="s.constituency_name">{{ s.constituency_name }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Ward</label>
-            <select formControlName="ward" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none">
-              <option value="" disabled>Select Ward</option>
-              <option *ngFor="let w of selectedSubCounty?.wards" [value]="w">{{ w }}</option>
-            </select>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select the location of your bursary office.</p>
-          </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full name</label>
             <input type="text" formControlName="fullName" placeholder="Your full name" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-sm outline-none placeholder-gray-400 dark:placeholder-gray-600" />

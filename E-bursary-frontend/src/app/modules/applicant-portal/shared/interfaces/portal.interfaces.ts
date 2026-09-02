@@ -45,6 +45,7 @@ export interface ApplicantApplication {
   parentPhone: string;
   parentEmail?: string;
   parentNationalId?: string;
+  disabilityStatus?: string;
   bankName: string;
   accountNumber: string;
   householdIncome: string;
@@ -52,7 +53,7 @@ export interface ApplicantApplication {
   specialCircumstances: string;
   personalStatement: string;
   guardianNotes: string;
-  levelType: 'high_school' | 'university';
+  levelType: 'high_school' | 'university' | 'primary_school';
   formOrLevel?: string;
   yearOfStudy?: string;
   documents: ApplicantDocument[];

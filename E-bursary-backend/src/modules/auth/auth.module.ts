@@ -12,7 +12,7 @@ import { EmailService } from './email.service';
 import { TenantsModule } from '../tenants/tenants.module';
 
 const googleOAuthProviders =
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  process.env.OFFLINE_MODE !== 'true' && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? [GoogleStrategy]
     : [];
 

@@ -19,7 +19,7 @@ const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const google_strategy_1 = require("./strategies/google.strategy");
 const email_service_1 = require("./email.service");
 const tenants_module_1 = require("../tenants/tenants.module");
-const googleOAuthProviders = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+const googleOAuthProviders = process.env.OFFLINE_MODE !== 'true' && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? [google_strategy_1.GoogleStrategy]
     : [];
 let AuthModule = class AuthModule {

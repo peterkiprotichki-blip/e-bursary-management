@@ -31,6 +31,9 @@ let BursaryController = class BursaryController {
         return this.bursaryService.listApplications(tenantId);
     }
     updateApplicationStage(id, dto, req) {
+        if (req.user?.role !== 'super_admin') {
+            throw new common_1.ForbiddenException('Only the bursary disbursement administrator can allocate funds.');
+        }
         const tenantId = req.user?.tenantId || '';
         const reviewerId = req.user?.sub || '';
         return this.bursaryService.updateApplicationStage(tenantId, id, dto, reviewerId);

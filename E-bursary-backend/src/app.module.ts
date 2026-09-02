@@ -8,7 +8,6 @@ import { PaymentsModule } from './modules/disbursements/payments.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { TenantPortalModule } from './modules/applicant-portal/tenant-portal.module';
 import { BursaryModule } from './modules/bursary/bursary.module';
-import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { UploadModule } from './modules/upload/upload.module';
     ReportsModule,
     TenantPortalModule,
     BursaryModule,
-    UploadModule,
   ],
 })
 export class AppModule {}

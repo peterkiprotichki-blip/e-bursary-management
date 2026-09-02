@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BursaryService } from './bursary.service';
@@ -25,6 +25,9 @@ export class BursaryController {
 
   @Put('applications/:id/stage')
   updateApplicationStage(@Param('id') id: string, @Body() dto: UpdateApplicationStageDto, @Req() req: any) {
+    if (req.user?.role !== 'super_admin') {
+      throw new ForbiddenException('Only the bursary disbursement administrator can allocate funds.');
+    }
     const tenantId = req.user?.tenantId || '';
     const reviewerId = req.user?.sub || '';
     return this.bursaryService.updateApplicationStage(tenantId, id, dto, reviewerId);

@@ -7,7 +7,7 @@ export declare class PortalLoginDto {
     password: string;
 }
 export declare class PortalRegisterDto {
-    location: string;
+    location?: string;
     fullName: string;
     email: string;
     password: string;

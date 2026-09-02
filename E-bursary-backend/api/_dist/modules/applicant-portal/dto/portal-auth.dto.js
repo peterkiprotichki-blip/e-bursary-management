@@ -40,8 +40,8 @@ class PortalRegisterDto {
 }
 exports.PortalRegisterDto = PortalRegisterDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], PortalRegisterDto.prototype, "location", void 0);
 __decorate([

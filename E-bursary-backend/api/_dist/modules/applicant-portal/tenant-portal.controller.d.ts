@@ -180,7 +180,7 @@ export declare class TenantPortalController {
         note: string;
     }[]>;
     updateProfile(req: any, dto: UpdatePortalProfileDto): Promise<any>;
-    getOrgSettings(req: any): Promise<{
+    getOrgSettings(): Promise<{
         mpesaClientId: any;
         orgName: any;
         bursaryOpen: boolean;
@@ -188,6 +188,10 @@ export declare class TenantPortalController {
     }>;
     resendInvite(propertyTenantId: string, req: any): Promise<{
         message: string;
+        setupLink: string;
+    } | {
+        message: string;
+        setupLink?: undefined;
     }>;
     uploadFile(file: FileUploadInterface): {
         success: boolean;

@@ -58,7 +58,7 @@
         </div>
 
         <!-- Divider -->
-        <div class="flex items-center my-6">
+        <div *ngIf="!offlineMode" class="flex items-center my-6">
           <div class="flex-1 border-t border-gray-200 dark:border-slate-700"></div>
           <span class="px-3 text-sm text-gray-400 dark:text-gray-500">or</span>
           <div class="flex-1 border-t border-gray-200 dark:border-slate-700"></div>
@@ -66,6 +66,7 @@
 
         <!-- Google Login -->
         <button
+          *ngIf="!offlineMode"
           (click)="googleLogin()"
           class="w-full py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
         >

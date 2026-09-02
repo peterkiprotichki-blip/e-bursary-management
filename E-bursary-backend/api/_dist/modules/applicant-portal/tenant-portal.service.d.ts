@@ -185,7 +185,7 @@ export declare class TenantPortalService {
         date: any;
         note: string;
     }[]>;
-    getOrgSettings(orgTenantId: string): Promise<{
+    getOrgSettings(orgTenantId?: string): Promise<{
         mpesaClientId: any;
         orgName: any;
         bursaryOpen: boolean;
@@ -193,6 +193,10 @@ export declare class TenantPortalService {
     }>;
     resendInvite(propertyTenantId: string, orgTenantId: string): Promise<{
         message: string;
+        setupLink: string;
+    } | {
+        message: string;
+        setupLink?: undefined;
     }>;
     generateAndSaveInviteToken(tenant: any): Promise<{
         token: string;

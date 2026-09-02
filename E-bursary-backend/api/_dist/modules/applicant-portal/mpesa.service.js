@@ -56,6 +56,9 @@ let MpesaService = MpesaService_1 = class MpesaService {
         });
     }
     async getAccessToken() {
+        if (process.env.OFFLINE_MODE === 'true') {
+            throw new common_1.BadRequestException('M-Pesa is unavailable while E-Bursary is running offline.');
+        }
         const credentials = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
         const result = await this.httpsRequest({
             hostname: this.baseUrl,

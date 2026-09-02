@@ -6,12 +6,12 @@ set "FRONTEND=%ROOT%E-bursary-frontend"
 
 echo Starting E-Bursary backend...
 pushd "%BACKEND%"
-start "E-Bursary Backend" cmd /k "npm run start:dev"
+start "E-Bursary Backend" cmd /k "npm.cmd run start:dev"
 popd
 
 echo Starting E-Bursary frontend...
 pushd "%FRONTEND%"
-start "E-Bursary Frontend" cmd /k "npm run start"
+start "E-Bursary Frontend" cmd /k "npm.cmd run start"
 popd
 
 echo Waiting for the app to start...

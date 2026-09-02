@@ -14,6 +14,10 @@ const common_1 = require("@nestjs/common");
 const nodemailer = require("nodemailer");
 let EmailService = class EmailService {
     constructor() {
+        if (process.env.EMAIL_ENABLED !== 'true' || process.env.OFFLINE_MODE === 'true') {
+            this.transporter = nodemailer.createTransport({ jsonTransport: true });
+            return;
+        }
         this.transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: parseInt(process.env.SMTP_PORT || '587', 10),

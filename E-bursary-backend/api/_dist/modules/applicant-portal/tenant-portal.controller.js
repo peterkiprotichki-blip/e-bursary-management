@@ -56,8 +56,8 @@ let TenantPortalController = class TenantPortalController {
     updateProfile(req, dto) {
         return this.service.updateProfile(req.user.sub, dto);
     }
-    getOrgSettings(req) {
-        return this.service.getOrgSettings(req.user.orgTenantId);
+    getOrgSettings() {
+        return this.service.getOrgSettings();
     }
     resendInvite(propertyTenantId, req) {
         return this.service.resendInvite(propertyTenantId, req.user.orgTenantId);
@@ -184,13 +184,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], TenantPortalController.prototype, "updateProfile", null);
 __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(tenant_portal_jwt_guard_1.TenantPortalJwtGuard),
     (0, common_1.Get)('org-settings'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get organisation settings (incl. mpesaClientId)' }),
-    __param(0, (0, common_1.Request)()),
+    (0, swagger_1.ApiOperation)({ summary: 'Get organisation settings (public for pre-login portal access checks)' }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], TenantPortalController.prototype, "getOrgSettings", null);
 __decorate([

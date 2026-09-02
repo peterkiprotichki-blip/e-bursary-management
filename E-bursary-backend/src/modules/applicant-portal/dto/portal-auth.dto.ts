@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class PortalSetupPasswordDto {
   @IsString()
@@ -20,9 +20,9 @@ export class PortalLoginDto {
 }
 
 export class PortalRegisterDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  location: string;
+  location?: string;
 
   @IsString()
   @IsNotEmpty()

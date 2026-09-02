@@ -1,31 +1,26 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
-import * as streamifier from 'streamifier';
+import { Injectable } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+
+export interface FileUploadInterface {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+}
 
 @Injectable()
 export class UploadService {
+  private readonly uploadDir = path.join(process.cwd(), 'uploads');
+
   constructor() {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'PLEASE_SET_YOUR_CLOUD_NAME',
-      api_key: process.env.CLOUDINARY_API_KEY || '787976619287259',
-      api_secret: process.env.CLOUDINARY_API_SECRET || 'PLEASE_SET_YOUR_API_SECRET',
-    });
+    fs.mkdirSync(this.uploadDir, { recursive: true });
   }
 
-  uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'bursary',
-          resource_type: 'auto',
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        },
-      );
-
-      streamifier.createReadStream(file.buffer).pipe(uploadStream);
-    });
+  uploadFile(file: FileUploadInterface): { url: string; filename: string } {
+    const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}-${safeName}`;
+    fs.writeFileSync(path.join(this.uploadDir, filename), file.buffer);
+    return { url: `/uploads/${filename}`, filename };
   }
 }

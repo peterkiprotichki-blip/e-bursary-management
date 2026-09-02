@@ -1,25 +1,25 @@
 /**
- * Full seed for Kiprotich Kirui — creates:
+ * Full seed for Naomi — creates:
  *  1. Organisation (e-bursary Realty)
  *  2. Property  (Parkside Apartments)
  *  3. Unit      (Unit A3)
- *  4. Portal tenant (kiprotichkirui301@gmail.com)
+ *  4. Portal tenant (naomi@example.com)
  *  5. Lease     (active, linking tenant → unit → property)
  *
  * Tenant Portal credentials:
- *   Email   : kiprotichkirui301@gmail.com
- *   Password: Kiprotich@2026
+ *   Email   : naomi@example.com
+ *   Password: Naomi@2026
  *
- * Usage:  node seed-kiprotich.js
+ * Usage:  node seed-naomi.js
  */
 
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 
-const PORTAL_EMAIL = 'kiprotichkirui301@gmail.com';
-const PORTAL_PASS  = 'Kiprotich@2026';
-const PORTAL_NAME  = 'Kiprotich Kirui';
+const PORTAL_EMAIL = 'naomi@example.com';
+const PORTAL_PASS  = 'Naomi@2026';
+const PORTAL_NAME  = 'Naomi';
 
 const schema = (col) =>
   mongoose.model(col + '__seed', new mongoose.Schema({}, { strict: false, collection: col }));
@@ -37,7 +37,7 @@ async function run() {
     org = await OrgM.create({
       name:        'e-bursary Realty',
       email:       'admin@e-bursary.co.ke',
-      phone:       '0712000001',
+      phone:       '0798991728',
       address:     'Nairobi, Kenya',
       plan:        'standard',
       isActive:    true,
@@ -142,7 +142,7 @@ async function run() {
       kraPin:                'A001234567B',
       occupation:            'Software Engineer',
       employer:              'Tech Solutions Ltd',
-      emergencyContactName:  'Jane Kirui',
+      emergencyContactName:  'Emergency Contact',
       emergencyContactPhone: '0712000099',
       avatar:                '',
       currentPropertyId:     propId,
@@ -211,7 +211,7 @@ async function run() {
   // ── 6. Summary ─────────────────────────────────────────────
   console.log('');
   console.log('══════════════════════════════════════════════════════');
-  console.log('  Tenant Portal — Kiprotich Kirui');
+  console.log('  Tenant Portal —', PORTAL_NAME);
   console.log('══════════════════════════════════════════════════════');
   console.log('  URL          :', 'http://localhost:4200/tenant-portal/login');
   console.log('  Email        :', PORTAL_EMAIL);
@@ -231,5 +231,3 @@ run().catch((err) => {
   console.error('✘  Seed failed:', err.message);
   process.exit(1);
 });
-
-

@@ -26,7 +26,7 @@ let UploadController = class UploadController {
         }
         try {
             const result = await this.uploadService.uploadFile(file);
-            return { url: result.secure_url };
+            return { url: result.url };
         }
         catch (error) {
             throw new common_1.BadRequestException(error.message || 'Error uploading file');

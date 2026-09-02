@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:super-admin": "node seed-super-admin.js",
     "seed:tenant": "node seed-tenant-user.js",
+    "seed:bursary": "node seed-bursary.js",
     "seed:production": "node seed-production.js",
     "vercel-build": "nest build"
   },

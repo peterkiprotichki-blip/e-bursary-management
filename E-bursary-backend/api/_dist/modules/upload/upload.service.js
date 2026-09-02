@@ -11,28 +11,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UploadService = void 0;
 const common_1 = require("@nestjs/common");
-const cloudinary_1 = require("cloudinary");
-const streamifier = require("streamifier");
+const fs = require("fs");
+const path = require("path");
 let UploadService = class UploadService {
     constructor() {
-        cloudinary_1.v2.config({
-            cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'PLEASE_SET_YOUR_CLOUD_NAME',
-            api_key: process.env.CLOUDINARY_API_KEY || '787976619287259',
-            api_secret: process.env.CLOUDINARY_API_SECRET || 'PLEASE_SET_YOUR_API_SECRET',
-        });
+        this.uploadDir = path.join(process.cwd(), 'uploads');
+        fs.mkdirSync(this.uploadDir, { recursive: true });
     }
     uploadFile(file) {
-        return new Promise((resolve, reject) => {
-            const uploadStream = cloudinary_1.v2.uploader.upload_stream({
-                folder: 'bursary',
-                resource_type: 'auto',
-            }, (error, result) => {
-                if (error)
-                    return reject(error);
-                resolve(result);
-            });
-            streamifier.createReadStream(file.buffer).pipe(uploadStream);
-        });
+        const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}-${safeName}`;
+        fs.writeFileSync(path.join(this.uploadDir, filename), file.buffer);
+        return { url: `/uploads/${filename}`, filename };
     }
 };
 exports.UploadService = UploadService;

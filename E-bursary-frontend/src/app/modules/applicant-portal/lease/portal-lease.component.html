@@ -75,8 +75,8 @@
             </td>
             <td class="px-4 py-3 text-gray-700 dark:text-gray-300 hidden md:table-cell">
               <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
-                [class]="application.levelType === 'high_school' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'">
-                {{ application.levelType === 'high_school' ? 'High School' : application.levelType === 'university' ? 'University' : '—' }}
+                [class]="application.levelType === 'high_school' || application.levelType === 'primary_school' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'">
+                {{ application.levelType === 'high_school' ? 'High School' : application.levelType === 'primary_school' ? 'Primary School' : application.levelType === 'university' ? 'University' : '—' }}
               </span>
             </td>
             <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
@@ -160,7 +160,20 @@
           <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Select Your Education Level</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Choose the option that applies to your bursary application. Different information is required for each level.</p>
 
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid gap-4 sm:grid-cols-3">
+            <button
+              (click)="selectLevel('primary_school')"
+              class="flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-gray-200 dark:border-slate-600 hover:border-purple-500 dark:hover:border-purple-500 transition-all hover:shadow-lg bg-white dark:bg-slate-800 group"
+            >
+              <div class="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-2xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+                <i class="fas fa-book"></i>
+              </div>
+              <div>
+                <div class="font-bold text-gray-900 dark:text-gray-100">Primary School</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">For primary school students (Classes 1-8). A parent or guardian applies on behalf of the student.</div>
+              </div>
+            </button>
+
             <button
               (click)="selectLevel('university')"
               class="flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-gray-200 dark:border-slate-600 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all hover:shadow-lg bg-white dark:bg-slate-800 group"
@@ -198,31 +211,31 @@
         <!-- APPLICANT / PARENT DETAILS -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {{ levelType === 'high_school' ? 'Parent / Guardian Details' : 'Applicant Details' }}
+            {{ levelType === 'high_school' || levelType === 'primary_school' ? 'Parent / Guardian Details' : 'Applicant Details' }}
           </h2>
           <p class="text-xs text-gray-500 dark:text-gray-400 -mt-3 mb-4">
-            {{ levelType === 'high_school' ? 'The parent or guardian applying on behalf of the student.' : 'The student applying for the bursary.' }}
+            {{ levelType === 'high_school' || levelType === 'primary_school' ? 'The parent or guardian applying on behalf of the student.' : 'The student applying for the bursary.' }}
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' ? 'Parent / Guardian Full Name' : 'Full Name' }} *</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' || levelType === 'primary_school' ? 'Parent / Guardian Full Name' : 'Full Name' }} *</label>
               <input formControlName="fullName" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' ? 'Parent / Guardian Phone' : 'Phone' }} *</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' || levelType === 'primary_school' ? 'Parent / Guardian Phone' : 'Phone' }} *</label>
               <input formControlName="phone" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" placeholder="0712345678" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' ? 'Parent / Guardian Email' : 'Email' }} *</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ levelType === 'high_school' || levelType === 'primary_school' ? 'Parent / Guardian Email' : 'Email' }} *</label>
               <input formControlName="email" type="email" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
             <div *ngIf="levelType === 'university'">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">National ID *</label>
               <input formControlName="idNumber" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
-            <div *ngIf="levelType === 'high_school'">
+            <div *ngIf="levelType === 'high_school' || levelType === 'primary_school'">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent National ID *</label>
-              <input formControlName="idNumber" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
+              <input formControlName="parentNationalId" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
           </div>
         </div>
@@ -230,19 +243,19 @@
         <!-- STUDENT / ACADEMIC DETAILS -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {{ levelType === 'high_school' ? 'Student Academic Details' : 'Academic Details' }}
+            {{ levelType === 'high_school' || levelType === 'primary_school' ? 'Student Academic Details' : 'Academic Details' }}
           </h2>
           <p class="text-xs text-gray-500 dark:text-gray-400 -mt-3 mb-4">
-            {{ levelType === 'high_school' ? 'Information about the student the bursary is for.' : 'Your institution and course information.' }}
+            {{ levelType === 'high_school' || levelType === 'primary_school' ? 'Information about the student the bursary is for.' : 'Your institution and course information.' }}
           </p>
 
-          <div *ngIf="levelType === 'high_school'" class="grid gap-4 sm:grid-cols-2 mb-4">
+          <div *ngIf="levelType === 'high_school' || levelType === 'primary_school'" class="grid gap-4 sm:grid-cols-2 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Student Full Name *</label>
               <input formControlName="parentName" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Student Phone</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Student Phone (optional)</label>
               <input formControlName="parentPhone" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
           </div>
@@ -272,19 +285,27 @@
                 <option value="Year 6">Year 6</option>
               </select>
             </div>
-            <div *ngIf="levelType === 'high_school'">
+            <div *ngIf="levelType === 'high_school' || levelType === 'primary_school'">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Form / Level *</label>
               <select formControlName="formOrLevel" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
-                <option value="">Select Form</option>
-                <option value="Form 1">Form 1</option>
-                <option value="Form 2">Form 2</option>
-                <option value="Form 3">Form 3</option>
-                <option value="Form 4">Form 4</option>
+                <option value="">{{ levelType === 'primary_school' ? 'Select Class' : 'Select Form' }}</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 1">Class 1</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 2">Class 2</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 3">Class 3</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 4">Class 4</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 5">Class 5</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 6">Class 6</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 7">Class 7</option>
+                <option *ngIf="levelType === 'primary_school'" value="Class 8">Class 8</option>
+                <option *ngIf="levelType !== 'primary_school'" value="Form 1">Form 1</option>
+                <option *ngIf="levelType !== 'primary_school'" value="Form 2">Form 2</option>
+                <option *ngIf="levelType !== 'primary_school'" value="Form 3">Form 3</option>
+                <option *ngIf="levelType !== 'primary_school'" value="Form 4">Form 4</option>
               </select>
             </div>
           </div>
 
-          <div *ngIf="levelType === 'high_school'" class="grid gap-4 sm:grid-cols-2 mt-4">
+          <div *ngIf="levelType === 'high_school' || levelType === 'primary_school'" class="grid gap-4 sm:grid-cols-2 mt-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent / Guardian Email *</label>
               <input formControlName="parentEmail" type="email" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
@@ -293,24 +314,12 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent / Guardian National ID *</label>
               <input formControlName="parentNationalId" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" />
             </div>
-          </div>
-        </div>
-
-        <!-- HOUSEHOLD DETAILS -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Household Details</h2>
-          <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Household Income *</label>
-              <input formControlName="householdIncome" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" placeholder="e.g. Below KES 10,000" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Dependents *</label>
-              <input formControlName="familyDependents" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" placeholder="e.g. 4" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Special Circumstances</label>
-              <input formControlName="specialCircumstances" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100" placeholder="Orphaned, disability, single parent, etc." />
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Does the student have a disability?</label>
+              <select formControlName="disabilityStatus" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
             </div>
           </div>
         </div>
@@ -348,7 +357,7 @@
         <!-- DOCUMENTS + CHECKLIST -->
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Document Uploads (3 Required)</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Required Document Uploads</h2>
             <div class="space-y-3 text-sm">
               <div *ngFor="let slot of docSlots" class="border border-dashed rounded-xl p-3 transition-colors dark:border-slate-600 dark:border-red-700 dark:bg-red-900/10"
                 [class.border-gray-300]="!uploadErrors.has(slot.key)"
@@ -415,7 +424,7 @@
                 </div>
               </div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">All 3 document types are required before submission. Images or PDFs (max 10 MB each).</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">Upload one clear image or PDF for each required document (max 10 MB each).</p>
           </div>
 
           <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">

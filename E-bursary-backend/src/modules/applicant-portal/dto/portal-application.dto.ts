@@ -65,6 +65,10 @@ export class SaveApplicantApplicationDto {
 
   @IsOptional()
   @IsString()
+  disabilityStatus?: string;
+
+  @IsOptional()
+  @IsString()
   bankName?: string;
 
   @IsOptional()

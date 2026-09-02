@@ -151,12 +151,13 @@ export class ApplicationDetailComponent implements OnInit {
       payload.paymentDestination = this.paymentDestination;
     }
 
+    const applicantId = this.selectedApp._id;
     this.bursaryService.updateApplicationStage(this.selectedApp._id, payload).subscribe({
       next: () => {
         this.updatingId = '';
         this.closeVettingModal();
         // Reload details to reflect new stage
-        this.loadApplicationDetails(this.selectedApp._id);
+        this.loadApplicationDetails(applicantId);
       },
       error: (err: any) => {
         this.updatingId = '';

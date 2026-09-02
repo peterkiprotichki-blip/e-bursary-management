@@ -155,6 +155,9 @@ export class PaymentsService {
   }
 
   async resendInvoice(id: string, tenantId: string) {
+    if (process.env.OFFLINE_MODE === 'true') {
+      return { message: 'Email delivery is disabled while E-Bursary is running offline.' };
+    }
     const payment = await this.findById(id, tenantId);
     const pt = await this.propertyTenantModel.findOne({
       _id: payment.propertyTenantId,
@@ -201,6 +204,9 @@ export class PaymentsService {
   }
 
   async sendPaymentReminder(propertyTenantId: string, tenantId: string) {
+    if (process.env.OFFLINE_MODE === 'true') {
+      return { message: 'Email delivery is disabled while E-Bursary is running offline.' };
+    }
     const pt = await this.propertyTenantModel.findOne({
       _id: propertyTenantId,
       tenantId,

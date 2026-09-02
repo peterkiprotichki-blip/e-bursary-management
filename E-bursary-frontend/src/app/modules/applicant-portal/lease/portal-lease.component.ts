@@ -29,17 +29,13 @@ export class PortalLeaseComponent implements OnInit {
   viewMode: 'list' | 'edit' = 'list';
   bursaryOpen = true;
 
-  docSlots: DocSlot[] = [
-    { key: 'national-id', label: 'National ID / Passport / Birth Certificate', max: 2 },
-    { key: 'admission-letter', label: 'Admission Letter / Fee Structure', max: 2 },
-    { key: 'fee-statement', label: 'Fee Statement', max: 4 },
-  ];
+  docSlots: DocSlot[] = [];
 
   documentPreviews = new Map<string, string[]>();
   uploadingDocs = new Map<string, boolean>();
   uploadErrors = new Map<string, string>();
 
-  levelType: 'university' | 'high_school' | null = null;
+  levelType: 'university' | 'high_school' | 'primary_school' | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -62,11 +58,9 @@ export class PortalLeaseComponent implements OnInit {
       parentPhone: [''],
       parentEmail: [''],
       parentNationalId: [''],
+      disabilityStatus: ['No'],
       bankName: ['', Validators.required],
       accountNumber: ['', Validators.required],
-      householdIncome: ['', Validators.required],
-      familyDependents: ['', Validators.required],
-      specialCircumstances: [''],
       personalStatement: ['', Validators.required],
       guardianNotes: [''],
     });
@@ -78,15 +72,17 @@ export class PortalLeaseComponent implements OnInit {
       if (val) {
         this.levelType = val;
         this.updateValidators(val);
+        this.setDocSlots(val);
       }
     });
     this.load();
   }
 
-  selectLevel(level: 'university' | 'high_school') {
+  selectLevel(level: 'university' | 'high_school' | 'primary_school') {
     this.levelType = level;
     this.form.patchValue({ levelType: level });
     this.updateValidators(level);
+    this.setDocSlots(level);
   }
 
   startNewApplication() {
@@ -149,7 +145,7 @@ export class PortalLeaseComponent implements OnInit {
     const parentNameCtrl = this.form.get('parentName');
     const parentPhoneCtrl = this.form.get('parentPhone');
 
-    if (level === 'high_school') {
+    if (level === 'high_school' || level === 'primary_school') {
       courseCtrl?.clearValidators();
       yearOfStudyCtrl?.clearValidators();
       formOrLevelCtrl?.setValidators([Validators.required]);
@@ -157,7 +153,7 @@ export class PortalLeaseComponent implements OnInit {
       parentEmailCtrl?.setValidators([Validators.required, Validators.email]);
       parentNationalIdCtrl?.setValidators([Validators.required]);
       parentNameCtrl?.setValidators([Validators.required]);
-      parentPhoneCtrl?.setValidators([Validators.required]);
+      parentPhoneCtrl?.clearValidators();
     } else {
       courseCtrl?.setValidators([Validators.required]);
       yearOfStudyCtrl?.setValidators([Validators.required]);
@@ -179,6 +175,17 @@ export class PortalLeaseComponent implements OnInit {
     parentPhoneCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
+  private focusFirstInvalidControl() {
+    const firstInvalid = Object.keys(this.form.controls).find((name) => this.form.get(name)?.invalid);
+    if (!firstInvalid) return;
+
+    const element = document.querySelector(`[formControlName="${firstInvalid}"]`) as HTMLElement | null;
+    if (!element) return;
+
+    element.focus();
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   load() {
     this.loading = true;
     this.portalService.getApplication().subscribe({
@@ -196,9 +203,10 @@ export class PortalLeaseComponent implements OnInit {
         });
 
         const existingLevel = application.levelType || '';
-        if (existingLevel && (existingLevel === 'university' || existingLevel === 'high_school')) {
+        if (existingLevel && (existingLevel === 'university' || existingLevel === 'high_school' || existingLevel === 'primary_school')) {
           this.levelType = existingLevel;
           this.updateValidators(existingLevel);
+          this.setDocSlots(existingLevel);
         }
         const profile = this.auth.getProfile();
         this.form.patchValue({
@@ -216,11 +224,9 @@ export class PortalLeaseComponent implements OnInit {
           parentPhone: application.parentPhone,
           parentEmail: application.parentEmail,
           parentNationalId: application.parentNationalId,
+          disabilityStatus: application.disabilityStatus || 'No',
           bankName: application.bankName,
           accountNumber: application.accountNumber,
-          householdIncome: application.householdIncome,
-          familyDependents: application.familyDependents,
-          specialCircumstances: application.specialCircumstances,
           personalStatement: application.personalStatement,
           guardianNotes: application.guardianNotes,
         });
@@ -231,6 +237,20 @@ export class PortalLeaseComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  private setDocSlots(level: string) {
+    this.docSlots = level === 'high_school' || level === 'primary_school'
+      ? [
+          { key: 'passport-photo', label: 'Student passport photo', max: 1 },
+          { key: 'fee-structure', label: 'School fee structure', max: 1 },
+        ]
+      : [
+          { key: 'national-id', label: 'National ID / Passport', max: 1 },
+          { key: 'fee-structure', label: 'Fee structure', max: 1 },
+          { key: 'course-details', label: 'Course registration / details', max: 1 },
+          { key: 'passport-photo', label: 'Passport photo', max: 1 },
+        ];
   }
 
   saveDraft() {
@@ -252,6 +272,7 @@ export class PortalLeaseComponent implements OnInit {
   submitApplication() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.focusFirstInvalidControl();
       this.error = 'Please complete all required fields before submitting.';
       return;
     }

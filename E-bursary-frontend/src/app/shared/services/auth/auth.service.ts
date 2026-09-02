@@ -17,54 +17,6 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     this.loadUser();
-
-    if (!this.getToken() && !environment.production) {
-      const demoTenant: Tenant = {
-        _id: 'demo-tenant',
-        name: 'Demo Tenant',
-        slug: 'demo-tenant',
-        domain: 'demo.local',
-        logoUrl: '',
-        isActive: true,
-        plan: 'free',
-        settings: {},
-        ownerUserId: 'demo-user',
-        contactEmail: 'demo@e-bursary.co.ke',
-        billingEmail: 'demo@e-bursary.co.ke',
-        maxUsers: 10,
-        maxProperties: 20,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const demoUser: BomoproUser = {
-        _id: 'demo-user',
-        name: 'Demo Admin',
-        email: 'demo@e-bursary.co.ke',
-        role: 'super_admin',
-        isActive: true,
-        assignedPropertyIds: [],
-        permissions: [
-          'view_dashboard',
-          'view_reports',
-          'view_users',
-          'create_users',
-          'edit_users',
-          'view_payments',
-          'create_payments',
-          'edit_payments',
-        ],
-        phone: '0700000000',
-        authProvider: 'credentials',
-        tenantIds: [demoTenant._id],
-        activeTenantId: demoTenant._id,
-      };
-
-      localStorage.setItem('e_bursary_token', 'demo-token');
-      localStorage.setItem('e_bursary_user', JSON.stringify(demoUser));
-      this.currentUser$.next(demoUser);
-      this.setTenantContext([demoTenant], demoTenant._id);
-    }
   }
 
   login(email: string, password: string): Observable<AuthResponse> {

@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 export declare class PortalDocumentDto {
     name?: string;
     fileName?: string;
@@ -17,6 +16,7 @@ export declare class SaveApplicantApplicationDto {
     parentPhone?: string;
     parentEmail?: string;
     parentNationalId?: string;
+    disabilityStatus?: string;
     bankName?: string;
     accountNumber?: string;
     householdIncome?: string;
@@ -29,5 +29,3 @@ export declare class SaveApplicantApplicationDto {
     yearOfStudy?: string;
     documents?: PortalDocumentDto[];
 }
-=======
->>>>>>> Stashed changes

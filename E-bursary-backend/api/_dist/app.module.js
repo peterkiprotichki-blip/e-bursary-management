@@ -17,7 +17,6 @@ const payments_module_1 = require("./modules/disbursements/payments.module");
 const reports_module_1 = require("./modules/reports/reports.module");
 const tenant_portal_module_1 = require("./modules/applicant-portal/tenant-portal.module");
 const bursary_module_1 = require("./modules/bursary/bursary.module");
-const upload_module_1 = require("./modules/upload/upload.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,7 +32,6 @@ exports.AppModule = AppModule = __decorate([
             reports_module_1.ReportsModule,
             tenant_portal_module_1.TenantPortalModule,
             bursary_module_1.BursaryModule,
-            upload_module_1.UploadModule,
         ],
     })
 ], AppModule);

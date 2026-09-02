@@ -221,6 +221,16 @@ export class AuthService {
   }
 
   async signup(dto: { name: string; email: string; password: string }) {
+    if (process.env.OFFLINE_MODE === 'true') {
+      await this.register({
+        name: dto.name,
+        email: dto.email,
+        password: dto.password,
+        role: RentiumUserRole.AGENT,
+      });
+      return { message: 'Signup successful. Your local account is ready to use.' };
+    }
+
     const existing = await this.userModel.findOne({ email: dto.email });
     if (existing) {
       throw new ConflictException('Email already registered');

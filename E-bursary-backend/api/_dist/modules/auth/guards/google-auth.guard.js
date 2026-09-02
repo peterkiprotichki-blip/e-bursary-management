@@ -11,7 +11,8 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 let GoogleAuthGuard = class GoogleAuthGuard extends (0, passport_1.AuthGuard)('google') {
     canActivate(context) {
-        const hasGoogleOAuthConfig = !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+        const hasGoogleOAuthConfig = process.env.OFFLINE_MODE !== 'true' &&
+            !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
         if (!hasGoogleOAuthConfig) {
             throw new common_1.ServiceUnavailableException('Google OAuth is not configured on this deployment');
         }

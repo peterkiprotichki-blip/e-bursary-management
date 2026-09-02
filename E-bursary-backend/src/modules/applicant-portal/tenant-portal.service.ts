@@ -77,9 +77,11 @@ export class TenantPortalService {
 
   private async resolveOrganizationByLocation(location: string) {
     const normalized = (location || '').trim().toLowerCase();
-    if (!normalized) return null;
 
     const orgs = await this.tenantOrgModel.find({ isActive: true }).lean();
+    if (!normalized) {
+      return orgs.find((org: any) => org?.slug === 'county-bursary-fund') || orgs[0] || null;
+    }
     if (orgs.length === 1) {
       return orgs[0];
     }
@@ -201,15 +203,19 @@ export class TenantPortalService {
     tenant.idNumber = dto.idNumber?.trim() || tenant.idNumber;
     tenant.kraPin = tenant.kraPin || '';
     tenant.documents = mergedDocuments.map((doc: any) => doc.dataUrl || doc.fileName || doc.name).filter(Boolean);
+    const isUniversity = (dto.levelType || portalState.levelType || 'university') === 'university';
+    const normalizedDto = isUniversity
+      ? dto
+      : { ...dto, course: '', yearOfStudy: '' };
     const progress = this.calculateApplicationProgress(
-      { ...portalState, ...dto, documents: mergedDocuments },
+      { ...portalState, ...normalizedDto, documents: mergedDocuments },
       tenant,
     );
     tenant.metadata = {
       ...(tenant.metadata || {}),
       applicantPortal: {
         ...portalState,
-        ...dto,
+        ...normalizedDto,
         documents: mergedDocuments,
         lastSavedAt: new Date().toISOString(),
         submitted: portalState.submitted || false,
@@ -226,14 +232,19 @@ export class TenantPortalService {
 
     const current = this.getApplicantPortalState(tenant);
     const isHighSchool = (current.levelType || 'university') === 'high_school';
+    const isUniversity = (current.levelType || 'university') === 'university';
     const idNumber = (current.idNumber || '').trim();
     const admissionNumber = (current.admissionNumber || '').trim();
+    const course = String(current.course || '').trim();
 
     if (!isHighSchool && !idNumber) {
       throw new BadRequestException('National ID/Passport is required to submit your application.');
     }
     if (!admissionNumber) {
       throw new BadRequestException('Admission Number is required to submit your application.');
+    }
+    if (isUniversity && !course) {
+      throw new BadRequestException('Course of Study is required to submit a university application.');
     }
     if (isHighSchool) {
       if (!String(current.parentEmail || '').trim()) {
@@ -242,6 +253,16 @@ export class TenantPortalService {
       if (!String(current.parentNationalId || '').trim()) {
         throw new BadRequestException('Parent National ID is required to submit your application.');
       }
+    }
+
+    const requiredDocumentKeys = isHighSchool
+      ? ['passport-photo', 'fee-structure']
+      : ['national-id', 'fee-structure', 'course-details', 'passport-photo'];
+    const uploadedDocumentKeys = new Set(
+      (current.documents || []).map((doc: any) => String(doc?.name || '').toLowerCase()),
+    );
+    if (requiredDocumentKeys.some((key) => !uploadedDocumentKeys.has(key))) {
+      throw new BadRequestException('Please upload all required documents before submitting your application.');
     }
 
     // Verify duplicate checks: once National ID or School Admission Number is submitted, re-application is blocked
@@ -295,8 +316,11 @@ export class TenantPortalService {
 
   // ──── Org Settings ───────────────────────────────────
 
-  async getOrgSettings(orgTenantId: string) {
-    const org = await this.tenantOrgModel.findById(orgTenantId).lean();
+  async getOrgSettings(orgTenantId?: string) {
+    const org = orgTenantId
+      ? await this.tenantOrgModel.findById(orgTenantId).lean()
+      : await this.tenantOrgModel.findOne({ isActive: true }).lean();
+
     return {
       mpesaClientId: (org as any)?.mpesaClientId || '',
       orgName: (org as any)?.name || '',
@@ -316,6 +340,13 @@ export class TenantPortalService {
     if (!tenant) throw new NotFoundException('Tenant not found');
 
     const { token } = await this.generateAndSaveInviteToken(tenant);
+    if (process.env.OFFLINE_MODE === 'true') {
+      return {
+        message: 'Invite created locally. Email delivery is disabled while E-Bursary is running offline.',
+        setupLink: `${process.env.FRONTEND_URL || 'http://localhost:4400'}/applicant-portal/setup-password?token=${token}`,
+      };
+    }
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
     const link = `${frontendUrl}/applicant-portal/setup-password?token=${token}`;
     await this.sendPortalInviteEmail(tenant.email, tenant.name, link);
@@ -384,11 +415,18 @@ export class TenantPortalService {
     const portal = metadata.applicantPortal || {};
     const submitted = Boolean(portal.submitted);
     
-    const requiredDocuments = [
-      { key: 'national-id', label: 'National ID / Passport / Birth Certificate', required: true },
-      { key: 'fee-statement', label: 'Fee Statement', required: true },
-      { key: 'admission-letter', label: 'Admission Letter / Fee Structure', required: true },
-    ];
+    const isHighSchool = portal.levelType === 'high_school' || portal.levelType === 'primary_school';
+    const requiredDocuments = isHighSchool
+      ? [
+          { key: 'passport-photo', label: 'Passport photo', required: true },
+          { key: 'fee-structure', label: 'School fee structure', required: true },
+        ]
+      : [
+          { key: 'national-id', label: 'National ID / Passport', required: true },
+          { key: 'fee-structure', label: 'Fee structure', required: true },
+          { key: 'course-details', label: 'Course registration / details', required: true },
+          { key: 'passport-photo', label: 'Passport photo', required: true },
+        ];
 
     return {
       _id: tenant._id?.toString?.() || tenant._id,
@@ -429,7 +467,7 @@ export class TenantPortalService {
   }
 
   private calculateApplicationProgress(portal: any, tenant: any) {
-    const isHighSchool = (portal.levelType || 'university') === 'high_school';
+    const isHighSchool = (portal.levelType || 'university') === 'high_school' || portal.levelType === 'primary_school';
     const fields = [
       portal.fullName || tenant.name,
       portal.phone || tenant.phone,
@@ -439,40 +477,43 @@ export class TenantPortalService {
       portal.institution,
       isHighSchool ? 'dummy-course' : portal.course,
       isHighSchool ? portal.parentName : 'dummy-parent-name',
-      isHighSchool ? portal.parentPhone : 'dummy-parent-phone',
+      isHighSchool ? '' : 'dummy-parent-phone',
       isHighSchool ? portal.parentEmail : 'dummy-parent-email',
       isHighSchool ? portal.parentNationalId : 'dummy-parent-id',
-      portal.personalStatement,
+      portal.bankName,
+      portal.accountNumber,
     ];
 
     const filled = fields.filter(Boolean).length;
     const docs = Array.isArray(portal.documents) ? portal.documents.length : 0;
-    const total = fields.length + 3;
-    return Math.min(100, Math.round(((filled + Math.min(docs, 3)) / total) * 100));
+    const requiredDocCount = isHighSchool ? 2 : 4;
+    const total = fields.length + requiredDocCount;
+    return Math.min(100, Math.round(((filled + Math.min(docs, requiredDocCount)) / total) * 100));
   }
 
   private buildChecklist(application: any) {
     const docs = Array.isArray(application.documents) ? application.documents : [];
     const hasDoc = (label: string) =>
       docs.some((doc: any) => String(doc?.name || doc?.fileName || doc).toLowerCase().includes(label));
-    const isHighSchool = (application.levelType || 'university') === 'high_school';
+    const isHighSchool = (application.levelType || 'university') === 'high_school' || application.levelType === 'primary_school';
 
     return [
       { id: 'identity', label: 'Identity details', done: !!application.fullName && (isHighSchool ? true : !!application.idNumber) },
       { id: 'academic', label: 'Academic details', done: !!application.institution && (isHighSchool ? !!application.formOrLevel : (!!application.yearOfStudy && !!application.course)) },
-      { id: 'household', label: 'Household and guardian details', done: (isHighSchool ? (!!application.parentName && !!application.parentPhone && !!application.parentEmail && !!application.parentNationalId) : true) },
-      { id: 'statement', label: 'Personal statement', done: !!application.personalStatement },
+      { id: 'guardian', label: 'Guardian details', done: (isHighSchool ? (!!application.parentName && !!application.parentEmail && !!application.parentNationalId) : true) },
+      { id: 'bank', label: 'School bank details', done: !!application.bankName && !!application.accountNumber },
       { id: 'id-doc', label: 'National ID / Passport uploaded', done: hasDoc('national-id') || hasDoc('id') || hasDoc('passport') || hasDoc('birth') },
-      { id: 'fee-doc', label: 'Fee statement uploaded', done: hasDoc('fee-statement') || hasDoc('fee') || hasDoc('statement') },
-      { id: 'admission-doc', label: 'Admission letter / Fee Structure uploaded', done: hasDoc('admission-letter') || hasDoc('admission') },
+      { id: 'fee-doc', label: 'Fee structure uploaded', done: hasDoc('fee-structure') },
+      ...(isHighSchool ? [] : [{ id: 'course-doc', label: 'Course details uploaded', done: hasDoc('course-details') }]),
+      { id: 'photo-doc', label: 'Passport photo uploaded', done: hasDoc('passport-photo') },
     ];
   }
 
   private buildTimeline(application: any) {
     const base = [
       { label: 'Draft created', status: 'completed', date: application.lastSavedAt || new Date().toISOString(), note: 'Application started in the applicant portal.' },
-      { label: 'Identity verified', status: application.fullName && (application.levelType === 'high_school' ? true : application.idNumber) ? 'completed' : 'pending', date: '', note: 'Your profile details should match your National ID and application records.' },
-      { label: 'Documents uploaded', status: Array.isArray(application.documents) && application.documents.length >= 3 ? 'completed' : 'pending', date: '', note: 'Upload identity, fee statement, and admission documents.' },
+      { label: 'Identity verified', status: application.fullName && (application.levelType === 'high_school' || application.levelType === 'primary_school' ? true : application.idNumber) ? 'completed' : 'pending', date: '', note: 'Your profile details should match your National ID and application records.' },
+      { label: 'Documents uploaded', status: Array.isArray(application.documents) && application.documents.length >= (application.levelType === 'high_school' || application.levelType === 'primary_school' ? 2 : 4) ? 'completed' : 'pending', date: '', note: 'Upload the documents required for your education level.' },
       { label: 'Application submitted', status: application.submitted ? 'completed' : 'pending', date: application.submittedAt || '', note: 'Submit once all required details are complete.' },
       { label: 'County / institutional review', status: application.submitted ? 'in_review' : 'locked', date: '', note: 'Review is normally done by the bursary committee after submission.' },
       { label: 'Award / disbursement decision', status: application.stage === 'awarded' ? 'completed' : 'pending', date: '', note: 'Successful applicants receive award and funding updates in the portal.' },
